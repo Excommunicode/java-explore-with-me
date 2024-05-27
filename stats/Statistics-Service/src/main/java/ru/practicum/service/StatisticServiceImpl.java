@@ -8,14 +8,16 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.dto.EndpointDto;
 import ru.practicum.dto.ViewStatsDto;
-import ru.practicum.exception.NotFoundException;
 import ru.practicum.mapper.StatisticMapper;
 import ru.practicum.model.StatisticProjection;
 import ru.practicum.repository.StatisticRepository;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static ru.practicum.constant.StatisticConstant.DATE_TIME_FORMATTER;
@@ -38,10 +40,11 @@ public class StatisticServiceImpl implements StatisticService {
 
     @Override
     public List<ViewStatsDto> getAllViewStatsDto(String start, String end, boolean unique, List<String> uri) {
+        log.debug("Requesting view statistics from {} to {}, unique: {}, for URIs: {}", start, end, unique, uri);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_TIME_FORMATTER);
         LocalDateTime startTime = LocalDateTime.parse(start, formatter);
         LocalDateTime endTime = LocalDateTime.parse(end, formatter);
-        List<StatisticProjection> allByTimestampBetween = new ArrayList<>();
+        List<StatisticProjection> allByTimestampBetween;
         if (uri == null || uri.isEmpty()) {
             allByTimestampBetween = unique ? statisticRepository.findAllByTimestampBetween(startTime, endTime)
                     : statisticRepository.findAllStatisticProjectionByTimestampBetween(startTime, endTime);
@@ -52,7 +55,9 @@ public class StatisticServiceImpl implements StatisticService {
 
         }
 
-        return findUnique(allByTimestampBetween);
+        List<ViewStatsDto> results = findUnique(allByTimestampBetween);
+        log.info("Retrieved statistics from {} to {}: {}", start, end, results.size());
+        return results;
     }
 
     private List<ViewStatsDto> findUnique(List<StatisticProjection> statisticProjections) {
