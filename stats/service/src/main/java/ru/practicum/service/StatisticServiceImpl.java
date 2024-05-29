@@ -41,9 +41,11 @@ public class StatisticServiceImpl implements StatisticService {
     @Override
     public List<ViewStatsDto> getAllViewStatsDto(String start, String end, boolean unique, List<String> uri) {
         log.debug("Requesting view statistics from {} to {}, unique: {}, for URIs: {}", start, end, unique, uri);
+
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_TIME_FORMATTER);
         LocalDateTime startTime = LocalDateTime.parse(start, formatter);
         LocalDateTime endTime = LocalDateTime.parse(end, formatter);
+
         List<StatisticProjection> allByTimestampBetween;
         if (uri == null || uri.isEmpty()) {
             allByTimestampBetween = unique ? statisticRepository.findAllByTimestampBetween(startTime, endTime)
@@ -52,7 +54,6 @@ public class StatisticServiceImpl implements StatisticService {
             allByTimestampBetween = unique ?
                     statisticRepository.findAllStatisticProjectionByTimestampBetweenAndUri(startTime, endTime, uri)
                     : statisticRepository.findAllStatisticProjectionByTimestampBetweenAndUriIn(startTime, endTime, uri);
-
         }
 
         List<ViewStatsDto> results = findUnique(allByTimestampBetween);
@@ -62,8 +63,10 @@ public class StatisticServiceImpl implements StatisticService {
 
     private List<ViewStatsDto> findUnique(List<StatisticProjection> statisticProjections) {
         Map<String, ViewStatsDto> viewStatsDtoMap = new LinkedHashMap<>();
+
         for (StatisticProjection statisticProjection : statisticProjections) {
             String key = statisticProjection.getApp() + "-" + statisticProjection.getUri();
+
             if (!viewStatsDtoMap.containsKey(key)) {
                 viewStatsDtoMap.put(key, ViewStatsDto.builder()
                         .app(statisticProjection.getApp())

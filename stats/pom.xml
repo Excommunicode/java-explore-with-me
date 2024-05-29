@@ -11,11 +11,11 @@
     <packaging>pom</packaging>
 
     <name>stats</name>
-    <url>http://maven.apache.org</url>
+
     <modules>
         <module>dto</module>
-        <module>Statistics-Service</module>
-        <module>Statistics-Client</module>
+        <module>service</module>
+        <module>client</module>
     </modules>
 
     <properties>
