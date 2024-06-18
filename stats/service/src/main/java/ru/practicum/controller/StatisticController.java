@@ -1,6 +1,7 @@
 package ru.practicum.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.dto.EndpointDto;
@@ -8,7 +9,10 @@ import ru.practicum.dto.ViewStatsDto;
 import ru.practicum.service.StatisticService;
 
 import javax.validation.Valid;
+import java.time.LocalDateTime;
 import java.util.List;
+
+import static ru.practicum.constant.StatisticConstant.DATE_TIME_FORMATTER;
 
 @RestController
 @RequiredArgsConstructor
@@ -41,13 +45,11 @@ public class StatisticController {
      * @return A list of ViewStatsDto objects representing the view statistics for the specified period, uniqueness flag, and URI filter.
      */
     @GetMapping("/stats")
-    public List<ViewStatsDto> getViewStatsDto(@RequestParam String start,
-                                              @RequestParam String end,
+    public List<ViewStatsDto> getViewStatsDto(@RequestParam @DateTimeFormat(pattern = DATE_TIME_FORMATTER) LocalDateTime start,
+                                              @RequestParam @DateTimeFormat(pattern = DATE_TIME_FORMATTER) LocalDateTime end,
                                               @RequestParam(required = false) List<String> uris,
                                               @RequestParam(defaultValue = "false") boolean unique) {
-        System.err.println("start " + start);
-        System.err.println("end " + end);
-        System.err.println("controller " + uris);
+
         return statisticService.getAllViewStatsDto(start, end, unique, uris);
     }
 }

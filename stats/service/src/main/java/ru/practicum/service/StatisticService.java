@@ -3,6 +3,7 @@ package ru.practicum.service;
 import ru.practicum.dto.EndpointDto;
 import ru.practicum.dto.ViewStatsDto;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface StatisticService {
@@ -22,5 +23,5 @@ public interface StatisticService {
      * @param uri    A list of URIs to filter the statistics by. Only the statistics for the specified URIs will be included in the result.
      * @return A list of ViewStatsDto objects representing the view statistics for the specified period, uniqueness flag, and URI filter.
      */
-    List<ViewStatsDto> getAllViewStatsDto(String start, String end, boolean unique, List<String> uri);
+    List<ViewStatsDto> getAllViewStatsDto(LocalDateTime start, LocalDateTime end, boolean unique, List<String> uri);
 }
