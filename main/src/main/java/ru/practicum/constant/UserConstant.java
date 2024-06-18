@@ -4,5 +4,6 @@ import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class UserConstant {
-    public static final String REGEX_EMAIL = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
+    public static final String INITIAL_X = "0";
+    public static final String LIMIT = "10";
 }

@@ -5,8 +5,6 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import ru.practicum.enums.ParticipationRequestStatus;
 import ru.practicum.enums.State;
-import ru.practicum.enums.Status;
-import ru.practicum.model.Event;
 import ru.practicum.model.ParticipationRequest;
 
 import java.util.List;
@@ -39,5 +37,11 @@ public interface ParticipationRepository extends JpaRepository<ParticipationRequ
     boolean existsByRequester_IdAndEvent_id(Long userId, Long eventId);
 
     List<ParticipationRequest> findAllByEvent_IdAndStatus(Long eventId, ParticipationRequestStatus status);
+
+
+    @Modifying
+    @Query(nativeQuery = true,
+            value = "UPDATE participation_requests  SET status = :status WHERE id IN :participationIds")
+    void updateByIdIn(List<Long> participationIds, String status);
 
 }

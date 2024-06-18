@@ -8,6 +8,9 @@ import ru.practicum.service.impl.CategoryService;
 
 import java.util.List;
 
+import static ru.practicum.constant.UserConstant.INITIAL_X;
+import static ru.practicum.constant.UserConstant.LIMIT;
+
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -16,19 +19,13 @@ public class CategoryPublicController {
     private final CategoryService categoryService;
 
     @GetMapping
-    public List<CategoryDto> getCategoriesDto(@RequestParam(defaultValue = "0") Integer from,
-                                              @RequestParam(defaultValue = "10") Integer size) {
-        System.err.println("Starting to fetch categories from index " + from + " with size " + size);
-        List<CategoryDto> categories = categoryService.getCategories(from, size);
-        System.err.println("Completed fetching categories. Total categories fetched: " + categories.size());
-        return categories;
+    public List<CategoryDto> getCategoriesDto(@RequestParam(defaultValue = INITIAL_X) int from,
+                                              @RequestParam(defaultValue = LIMIT) int size) {
+        return categoryService.getCategories(from, size);
     }
 
     @GetMapping("/{catId}")
     public CategoryDto getCategoryDto(@PathVariable Long catId) {
-        System.err.println("Starting to fetch category with ID " + catId);
-        CategoryDto categoryDto = categoryService.getCategoryDto(catId);
-        System.err.println("Category fetched successfully: " + categoryDto.getName());
-        return categoryDto;
+        return categoryService.getCategoryDto(catId);
     }
 }

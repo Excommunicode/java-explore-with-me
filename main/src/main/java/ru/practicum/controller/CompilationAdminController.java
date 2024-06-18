@@ -20,25 +20,17 @@ public class CompilationAdminController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public CompilationDto addCompilation(@Validated(OnCreate.class) @RequestBody UpdateCompilationRequest updateCompilationRequest) {
-        System.err.println("Adding new compilation with request: " + updateCompilationRequest);
-        CompilationDto result = compilationService.addCompilationDto(updateCompilationRequest);
-        System.err.println("Added compilation: " + result);
-        return result;
+        return compilationService.addCompilationDto(updateCompilationRequest);
     }
 
     @DeleteMapping("/{compId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteCompilation(@PathVariable Long compId) {
-        System.err.println("Deleting compilation with ID: " + compId);
         compilationService.deleteCompilationDto(compId);
-        System.err.println("Deleted compilation with ID: " + compId);
     }
 
     @PatchMapping("/{compId}")
     public CompilationDto updateCompilation(@PathVariable Long compId, @Validated(OnUpdate.class) @RequestBody UpdateCompilationRequest updateCompilationRequest) {
-        System.err.println("Updating compilation with ID: " + compId + " with request: " + updateCompilationRequest);
-        CompilationDto result = compilationService.updateCompilation(compId, updateCompilationRequest);
-        System.err.println("Updated compilation with ID: " + compId + ": " + result);
-        return result;
+        return compilationService.updateCompilation(compId, updateCompilationRequest);
     }
 }

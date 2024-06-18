@@ -20,10 +20,7 @@ public class ParticipationPrivateController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ParticipationRequestDto addEventRegistration(@PathVariable Long userId, @RequestParam Long eventId) {
-        System.err.println("Attempting to register user with ID " + userId + " for event with ID " + eventId);
-        ParticipationRequestDto  registration = privateParticipationService.addRequest(userId, eventId);
-        System.err.println("Registration successful for user with ID " + userId + " to event with ID " + eventId);
-        return registration;
+        return privateParticipationService.addRequest(userId, eventId);
     }
 
     @GetMapping

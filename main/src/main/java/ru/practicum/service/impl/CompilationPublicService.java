@@ -7,5 +7,5 @@ import java.util.List;
 public interface CompilationPublicService {
     CompilationDto findCompilationDtoById(Long compId);
 
-    List<CompilationDto> findByPinned(Boolean pinned, Integer from, Integer size);
+    List<CompilationDto> findByPinned(Boolean pinned, int from, int size);
 }

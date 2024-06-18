@@ -10,7 +10,7 @@ import java.util.List;
 public interface EventPrivateService {
     EventFullDto addEventDto(NewEventDto newEventDto, Long userId);
 
-    List<EventFullDto> getEventByUserId(Long userId, Integer from, Integer size);
+    List<EventFullDto> getEventByUserId(Long userId, int from, int size);
 
     EventFullDto getEventForVerificationUser(Long userId, Long eventId);
 

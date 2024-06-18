@@ -3,6 +3,7 @@ package ru.practicum.repository;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import ru.practicum.enums.State;
 import ru.practicum.model.Event;
@@ -77,19 +78,23 @@ public interface EventRepository extends JpaRepository<Event, Long>, JpaSpecific
     boolean existsByInitiator_IdAndId(Long userId, Long eventId);
 
     @Query(nativeQuery = true,
-    value = "SELECT * " +
-            "FROM events e " +
-            "WHERE e.initiator_id IN :users " +
-            "AND e.category_id IN :categories " +
-            "AND e.event_date BETWEEN :rangeStart AND :rangeEnd " +
-            "AND e.state IN :states " +
-            "LIMIT :size " +
-            "OFFSET :from")
-        List<Event> findAllByInitiator_IdInAndEventDateIsBetweenAndCategory_IdIn(List<Long> users,
+            value = "SELECT * " +
+                    "FROM events e " +
+                    "WHERE e.initiator_id IN :users " +
+                    "AND e.category_id IN :categories " +
+                    "AND e.event_date BETWEEN :rangeStart AND :rangeEnd " +
+                    "AND e.state IN :states " +
+                    "LIMIT :size " +
+                    "OFFSET :from")
+    List<Event> findAllByInitiator_IdInAndEventDateIsBetweenAndCategory_IdIn(List<Long> users,
                                                                              List<Long> categories,
                                                                              LocalDateTime rangeStart,
                                                                              LocalDateTime rangeEnd,
                                                                              Integer from, Integer size,
                                                                              List<String> states);
 
+    @Modifying
+    @Query(nativeQuery = true,
+            value = "UPDATE events SET confirmed_requests = confirmed_requests + :countConfirmedRequests WHERE id = :eventId")
+    void updateByIdInAndConfirmedRequests(Long eventId, int countConfirmedRequests);
 }

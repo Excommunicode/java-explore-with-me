@@ -16,14 +16,9 @@ public interface CompilationMapper {
     @Mapping(target = "events", source = "events")
     Compilation toModel(UpdateCompilationRequest updateCompilationRequest, Set<Event> events);
 
-
     Compilation toModel(CompilationDto compilationDto);
 
-
-                        CompilationDto toDto(Compilation compilation);
+    CompilationDto toDto(Compilation compilation);
 
     List<CompilationDto> toListDto(List<Compilation> compilations);
-
-    @Mapping(target = "events", source = "events")
-    Compilation toModelAfterUpdate(CompilationDto compilationDto, Set<Event> events);
 }

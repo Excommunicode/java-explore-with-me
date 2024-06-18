@@ -17,7 +17,6 @@ import ru.practicum.repository.EventRepository;
 import ru.practicum.service.impl.CategoryService;
 
 import java.util.List;
-import java.util.Objects;
 
 @Slf4j
 @Service
@@ -59,7 +58,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public List<CategoryDto> getCategories(Integer from, Integer size) {
+    public List<CategoryDto> getCategories(int from, int size) {
         log.debug("Fetching categories from: {}, size: {}", from, size);
         Pageable pageable = PageRequest.of(from, size);
         List<CategoryDto> categories = categoryMapper.toDtoList(categoryRepository.findAll(pageable).getContent());

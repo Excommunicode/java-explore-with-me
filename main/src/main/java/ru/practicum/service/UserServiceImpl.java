@@ -41,14 +41,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserDto> getUsers(Long id, Integer from, Integer size) {
+    public List<UserDto> getUsers(Long id, int from, int size) {
         Pageable pageable = PageRequest.of(from, size);
-        if (id != null) {
-            return userMapper.toDtoList(userRepository.findAllById(id, pageable));
-        } else {
-            return userMapper.toDtoList(userRepository.findAll(pageable).getContent());
-        }
-
+        return id != null ? userMapper.toDtoList(userRepository.findAllById(id, pageable)) :
+                userMapper.toDtoList(userRepository.findAll(pageable).getContent());
     }
 
     private void checkExistsEmail(String email) {

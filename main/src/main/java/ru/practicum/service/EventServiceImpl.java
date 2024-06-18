@@ -79,143 +79,40 @@ public class EventServiceImpl implements EventPrivateService, EventPublicService
     @Override
     public UpdateEventUserRequestOutput updateEvent(Long userId, Long eventId, UpdateEventUserRequest updateEventUserRequest) {
         log.debug("Updating event with ID: {}", eventId);
-        System.err.println("Блядь " + updateEventUserRequest.getParticipantLimit());
-        Event event = eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException("Event not found"));
-        log.debug("Event found and update initiated by user ID: {}", userId);
+        Event event = findEventById(eventId);
 
-        if (updateEventUserRequest.getParticipantLimit() != null && updateEventUserRequest.getParticipantLimit() < 0) {
-            throw new BadRequestException("ParticipantLimit cannot be negative");
-        }
-        if (!event.getInitiator().getId().equals(userId)) {
-            throw new BadRequestException("Unauthorized attempt to update event by user ID: " + userId);
-        }
-        if (event.getState() == PUBLISHED) {
-            throw new ConflictException("You cannot change a published event");
-        }
-        if (updateEventUserRequest.getAnnotation() != null) {
-            event.setAnnotation(updateEventUserRequest.getAnnotation());
-        }
-        if (updateEventUserRequest.getCategoryDto() != null) {
-            event.setCategory(categoryMapper.toModel(updateEventUserRequest.getCategoryDto()));
-        }
-        if (updateEventUserRequest.getDescription() != null) {
-            event.setDescription(updateEventUserRequest.getDescription());
-        }
-        if (updateEventUserRequest.getEventDate() != null) {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_TIME_FORMATTER);
-            String dateTimeString = updateEventUserRequest.getEventDate();
-            LocalDateTime dateTime = LocalDateTime.parse(dateTimeString, formatter);
-            checkEventDate(dateTime);
-            event.setEventDate(dateTime);
-        }
-        if (updateEventUserRequest.getParticipantLimit() != null) {
-            if (event.getParticipantLimit() < updateEventUserRequest.getParticipantLimit()) {
-                event.setParticipantLimit(updateEventUserRequest.getParticipantLimit());
-            } else {
-                System.err.println("Тут какая то странная хрень");
-            }
-        }
-        if (updateEventUserRequest.getRequestModeration() != null) {
-            event.setRequestModeration(updateEventUserRequest.getRequestModeration());
-        }
-        if (updateEventUserRequest.getStateAction() != null) {
-            StateAction stateAction = updateEventUserRequest.getStateAction();
+        validateUpdateRequest(userId, event, updateEventUserRequest);
+        applyEventUpdates(event, updateEventUserRequest);
 
-            switch (stateAction) {
-                case PUBLISH_EVENT:
-
-                    event.setState(PUBLISHED);
-                    break;
-                case SEND_TO_REVIEW:
-                    event.setState(PENDING);
-                    break;
-                case CANCEL_REVIEW:
-                case REJECT_EVENT:
-                    event.setState(CANCELED);
-                    break;
-            }
-        }
-        if (updateEventUserRequest.getTitle() != null) {
-            event.setTitle(updateEventUserRequest.getTitle());
-        }
         UpdateEventUserRequestOutput fullDto = eventMapper.toUpdateDtoOutput(eventRepository.save(event));
-        log.info("Update completed for Event with ");
+        log.info("Update completed for Event with ID: {}", fullDto.getId());
         return fullDto;
     }
 
     @Transactional
     @Override
     public EventFullDto updateEventByAdmin(Long eventId, UpdateEventAdminRequest updateEventAdminRequest) {
-        Event event = eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException("Event not found"));
+        Event event = findEventById(eventId);
 
-        if (updateEventAdminRequest.getAnnotation() != null) {
-            event.setAnnotation(updateEventAdminRequest.getAnnotation());
-        }
-        if (updateEventAdminRequest.getCategoryDto() != null) {
-            event.setCategory(categoryMapper.toModel(updateEventAdminRequest.getCategoryDto()));
-        }
-        if (updateEventAdminRequest.getDescription() != null) {
-            event.setDescription(updateEventAdminRequest.getDescription());
-        }
+        applyAdminEventUpdates(event, updateEventAdminRequest);
 
-        if (updateEventAdminRequest.getEventDate() != null) {
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_TIME_FORMATTER);
-            String dateTimeString = updateEventAdminRequest.getEventDate();
-            LocalDateTime dateTime = LocalDateTime.parse(dateTimeString, formatter);
-
-            checkEventDate(dateTime);
-            event.setEventDate(dateTime);
-        }
-        if (updateEventAdminRequest.getParticipantLimit() != null) {
-            event.setParticipantLimit(updateEventAdminRequest.getParticipantLimit());
-        }
-        if (updateEventAdminRequest.getRequestModeration() != null) {
-            event.setRequestModeration(updateEventAdminRequest.getRequestModeration());
-        }
-        if (updateEventAdminRequest.getPaid() != null) {
-            event.setPaid(updateEventAdminRequest.getPaid());
-        }
-        if (updateEventAdminRequest.getStateAction() != null) {
-            StateAction stateAction = updateEventAdminRequest.getStateAction();
-            switch (stateAction) {
-                case PUBLISH_EVENT:
-                    checkEventAlreadyPublished(eventId);
-                    event.setState(PUBLISHED);
-                    event.setPublishedOn(LocalDateTime.now());
-
-                    break;
-                case SEND_TO_REVIEW:
-                    event.setState(PENDING);
-                    break;
-                case CANCEL_REVIEW:
-                case REJECT_EVENT:
-                    checkEventIsPublished(eventId);
-                    event.setState(CANCELED);
-                    break;
-            }
-        }
-
-        if (updateEventAdminRequest.getTitle() != null) {
-            event.setTitle(updateEventAdminRequest.getTitle());
-        }
         EventFullDto fullDto = eventMapper.toFullDto(eventRepository.save(event));
-        log.info("Update completed for Event with ID: {}", fullDto.getId());
+        log.info("Update by admin completed for Event with ID: {}", fullDto.getId());
         return fullDto;
     }
 
+
     @Override
     public List<EventFullDto> findEventForAdmin(List<Long> users, List<String> states, List<Long> categories,
-                                                String rangeStart, String rangeEnd, Integer from, Integer size) {
-        System.err.println("aughauerghuirghaueighaeuirghaueighaeiurh");
+                                                LocalDateTime rangeStart, LocalDateTime rangeEnd, int from, int size) {
+
         Pageable pageable = PageRequest.of(from, size, Sort.by(Sort.Direction.DESC, "id"));
 
         List<EventFullDto> eventFullDtos = new ArrayList<>();
 
 
         if (Objects.nonNull(rangeStart) || Objects.nonNull(states)) {
-            LocalDateTime startDateTime = LocalDateTime.parse(rangeStart, DateTimeFormatter.ofPattern(DATE_TIME_FORMATTER));
-            LocalDateTime endDateTime = LocalDateTime.parse(rangeEnd, DateTimeFormatter.ofPattern(DATE_TIME_FORMATTER));
-            eventFullDtos = eventMapper.toDtoList(eventRepository.findAllByStateAndEventDate(states, startDateTime, endDateTime, from, size));
+            eventFullDtos = eventMapper.toDtoList(eventRepository.findAllByStateAndEventDate(states, rangeStart, rangeEnd, from, size));
         }
 
         if (Objects.nonNull(users) || Objects.nonNull(categories)) {
@@ -247,7 +144,7 @@ public class EventServiceImpl implements EventPrivateService, EventPublicService
     }
 
     @Override
-    public List<EventFullDto> getEventByUserId(Long userId, Integer from, Integer size) {
+    public List<EventFullDto> getEventByUserId(Long userId, int from, int size) {
         log.debug("Fetching events initiated by user ID: {}, page: {}, size: {}", userId, from, size);
         Pageable pageable = PageRequest.of(from, size);
         List<EventFullDto> dtoList = eventMapper.toDtoList(eventRepository.findAllByInitiator_Id(userId, pageable));
@@ -273,7 +170,7 @@ public class EventServiceImpl implements EventPrivateService, EventPublicService
     @Override
     public List<EventFullDto> getEventsDto(String text, List<Long> categories, boolean paid,
                                            LocalDateTime rangeStart, LocalDateTime rangeEnd, boolean onlyAvailable,
-                                           EventSort sort, Integer from, Integer size, HttpServletRequest httpServletRequest) {
+                                           EventSort sort, int from, int size, HttpServletRequest httpServletRequest) {
 
         Specification<Event> specification = Specification.where(null);
 
@@ -313,13 +210,12 @@ public class EventServiceImpl implements EventPrivateService, EventPublicService
 
         String uri = "/events/" + event.getId();
         List<String> uris = List.of(uri);
-        System.err.println("urisssaaaa " + uris.get(0));
+
 
         String startTime = event.getPublishedOn().minusHours(1).format(DateTimeFormatter.ofPattern(DATE_TIME_FORMATTER));
         String endTime = LocalDateTime.now().plusMinutes(1).format(DateTimeFormatter.ofPattern(DATE_TIME_FORMATTER));
 
         List<ViewStatsDto> stats = statsClient.getStats(startTime, endTime, uris, true);
-        System.err.println(" Main service " + stats);
 
         if (!stats.isEmpty()) {
             event.setViews(stats.get(0).getHits());
@@ -346,7 +242,7 @@ public class EventServiceImpl implements EventPrivateService, EventPublicService
     }
 
     private void checkEventAlreadyPublished(Long eventId) {
-        EventFullDto eventFullDto = findEventById(eventId);
+        EventFullDto eventFullDto = findEvenFullDtoById(eventId);
         if (Objects.requireNonNull(eventFullDto.getState()) == PUBLISHED ||
                 Objects.requireNonNull(eventFullDto.getState()) == CANCELED) {
             throw new ConflictException("Event has already published");
@@ -354,13 +250,13 @@ public class EventServiceImpl implements EventPrivateService, EventPublicService
     }
 
     private void checkEventIsPublished(Long eventId) {
-        EventFullDto eventFullDto = findEventById(eventId);
+        EventFullDto eventFullDto = findEvenFullDtoById(eventId);
         if (Objects.requireNonNull(eventFullDto.getState()) == PUBLISHED) {
             throw new ConflictException("Event already been published at the moment");
         }
     }
 
-    private EventFullDto findEventById(Long eventId) {
+    private EventFullDto findEvenFullDtoById(Long eventId) {
         return eventMapper.toFullDto(eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException("Event not found")));
     }
@@ -427,6 +323,119 @@ public class EventServiceImpl implements EventPrivateService, EventPublicService
     private void checkEventDate(LocalDateTime dateTime) {
         if (dateTime.isBefore(LocalDateTime.now())) {
             throw new BadRequestException("you cannot change the date of the event to a past date");
+        }
+    }
+
+    private Event findEventById(Long eventId) {
+        return eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException(String.format("Event with id %s not found", eventId)));
+    }
+
+    private void validateUpdateRequest(Long userId, Event event, UpdateEventUserRequest updateEventUserRequest) {
+        if (updateEventUserRequest.getParticipantLimit() != null && updateEventUserRequest.getParticipantLimit() < 0) {
+            throw new BadRequestException("ParticipantLimit cannot be negative");
+        }
+        if (!event.getInitiator().getId().equals(userId)) {
+            throw new BadRequestException("Unauthorized attempt to update event by user ID: " + userId);
+        }
+        if (event.getState() == PUBLISHED) {
+            throw new ConflictException("You cannot change a published event");
+        }
+    }
+
+    private void applyEventUpdates(Event event, UpdateEventUserRequest updateEventUserRequest) {
+        if (updateEventUserRequest.getAnnotation() != null) {
+            event.setAnnotation(updateEventUserRequest.getAnnotation());
+        }
+        if (updateEventUserRequest.getCategoryDto() != null) {
+            event.setCategory(categoryMapper.toModel(updateEventUserRequest.getCategoryDto()));
+        }
+        if (updateEventUserRequest.getDescription() != null) {
+            event.setDescription(updateEventUserRequest.getDescription());
+        }
+        if (updateEventUserRequest.getEventDate() != null) {
+            LocalDateTime dateTime = parseEventDate(updateEventUserRequest.getEventDate());
+            checkEventDate(dateTime);
+            event.setEventDate(dateTime);
+        }
+        if (updateEventUserRequest.getRequestModeration() != null) {
+            event.setRequestModeration(updateEventUserRequest.getRequestModeration());
+        }
+        if (updateEventUserRequest.getStateAction() != null) {
+            applyStateAction(event, updateEventUserRequest.getStateAction());
+        }
+        if (updateEventUserRequest.getTitle() != null) {
+            event.setTitle(updateEventUserRequest.getTitle());
+        }
+    }
+
+    private LocalDateTime parseEventDate(String dateTimeString) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DATE_TIME_FORMATTER);
+        return LocalDateTime.parse(dateTimeString, formatter);
+    }
+
+    private void applyStateAction(Event event, StateAction stateAction) {
+        switch (stateAction) {
+            case PUBLISH_EVENT:
+                event.setState(PUBLISHED);
+                break;
+            case SEND_TO_REVIEW:
+                event.setState(PENDING);
+                break;
+            case CANCEL_REVIEW:
+            case REJECT_EVENT:
+                event.setState(CANCELED);
+                break;
+        }
+    }
+
+    private void applyAdminEventUpdates(Event event, UpdateEventAdminRequest updateEventAdminRequest) {
+        if (updateEventAdminRequest.getAnnotation() != null) {
+            event.setAnnotation(updateEventAdminRequest.getAnnotation());
+        }
+        if (updateEventAdminRequest.getCategoryDto() != null) {
+            event.setCategory(categoryMapper.toModel(updateEventAdminRequest.getCategoryDto()));
+        }
+        if (updateEventAdminRequest.getDescription() != null) {
+            event.setDescription(updateEventAdminRequest.getDescription());
+        }
+        if (updateEventAdminRequest.getEventDate() != null) {
+            LocalDateTime dateTime = parseEventDate(updateEventAdminRequest.getEventDate());
+            checkEventDate(dateTime);
+            event.setEventDate(dateTime);
+        }
+        if (updateEventAdminRequest.getParticipantLimit() != null) {
+            event.setParticipantLimit(updateEventAdminRequest.getParticipantLimit());
+        }
+        if (updateEventAdminRequest.getRequestModeration() != null) {
+            event.setRequestModeration(updateEventAdminRequest.getRequestModeration());
+        }
+        if (updateEventAdminRequest.getPaid() != null) {
+            event.setPaid(updateEventAdminRequest.getPaid());
+        }
+        if (updateEventAdminRequest.getStateAction() != null) {
+            applyAdminStateAction(event, updateEventAdminRequest.getStateAction(), event.getId());
+        }
+        if (updateEventAdminRequest.getTitle() != null) {
+            event.setTitle(updateEventAdminRequest.getTitle());
+        }
+    }
+
+    private void applyAdminStateAction(Event event, StateAction stateAction, Long eventId) {
+        switch (stateAction) {
+            case PUBLISH_EVENT:
+                checkEventAlreadyPublished(eventId);
+                event.setState(PUBLISHED);
+                event.setPublishedOn(LocalDateTime.now());
+                break;
+            case SEND_TO_REVIEW:
+                event.setState(PENDING);
+                break;
+            case CANCEL_REVIEW:
+            case REJECT_EVENT:
+                checkEventIsPublished(eventId);
+                event.setState(CANCELED);
+                break;
         }
     }
 }

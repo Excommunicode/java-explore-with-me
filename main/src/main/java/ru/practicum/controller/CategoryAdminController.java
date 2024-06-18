@@ -19,25 +19,17 @@ public class CategoryAdminController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public CategoryDto createCategory(@Valid @RequestBody CategoryDto categoryDto) {
-        System.err.println("Request to create new category: " + categoryDto);
-        CategoryDto createdCategory = categoryService.addCategoryDto(categoryDto);
-        System.err.println("Category created successfully: " + createdCategory);
-        return createdCategory;
+        return categoryService.addCategoryDto(categoryDto);
     }
 
     @PatchMapping("/{catId}")
     public CategoryDto updateCategory(@PathVariable Long catId, @Valid @RequestBody CategoryDto categoryDto) {
-        System.err.println("Request to update category with ID " + catId + ": " + categoryDto);
-        CategoryDto updatedCategory = categoryService.updateCategory(catId, categoryDto);
-        System.err.println("Category updated successfully: " + updatedCategory);
-        return updatedCategory;
+        return categoryService.updateCategory(catId, categoryDto);
     }
 
     @DeleteMapping("/{catId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteCategory(@PathVariable Long catId) {
-        System.err.println("Request to delete category with ID: " + catId);
         categoryService.deleteCategory(catId);
-        System.err.println("Category deleted successfully");
     }
 }

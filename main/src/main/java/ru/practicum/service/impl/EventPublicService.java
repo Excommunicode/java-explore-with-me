@@ -12,8 +12,8 @@ public interface EventPublicService {
                                     boolean paid, LocalDateTime rangeStart,
                                     LocalDateTime rangeEnd,
                                     boolean onlyAvailable,
-                                    EventSort sort, Integer from,
-                                    Integer size, HttpServletRequest httpServletRequest);
+                                    EventSort sort, int from,
+                                    int size, HttpServletRequest httpServletRequest);
 
     EventFullDto getEventByIdPublic(Long id, HttpServletRequest httpServletRequest);
 }

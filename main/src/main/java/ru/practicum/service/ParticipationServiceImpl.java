@@ -72,11 +72,8 @@ public class ParticipationServiceImpl implements ParticipationPrivateService {
 
         List<ParticipationRequest> eventRegistrations = participationRepository.findAllByIds(newRequestsEvent.getRequestIds());
         EventFullDto eventFullDto = findEventById(eventId);
-        for (ParticipationRequest eventRegistration : eventRegistrations) {
-            if (eventRegistration.getStatus() == CONFIRMED) {
-                throw new ConflictException("WEFNuiufhariufhariughierug");
-            }
-        }
+        checkStatus(eventRegistrations);
+
         for (ParticipationRequest eventRegistration : eventRegistrations) {
             checkParticipationLimit(eventFullDto);
             eventRegistration.setStatus(newRequestsEvent.getStatus());
@@ -96,7 +93,6 @@ public class ParticipationServiceImpl implements ParticipationPrivateService {
                 .collect(Collectors.toList());
 
         confirmedRequests.sort(Comparator.comparing(ParticipationRequestDto::getId).reversed());
-
         rejectedRequests.sort(Comparator.comparing(ParticipationRequestDto::getId).reversed());
 
         EventRequestStatusUpdateResult result = EventRequestStatusUpdateResult.builder()
@@ -140,23 +136,22 @@ public class ParticipationServiceImpl implements ParticipationPrivateService {
     }
 
 
-//    private ParticipationRequestStatus getParticipationRequestStatus(EventFullDto eventById) {
-//        ParticipationRequestStatus pending;
-//        if (eventById.getParticipantLimit() == 0) {
-//            pending = CONFIRMED;
-//        } else {
-//            pending = PENDING;
-//        }
-//        return pending;
-//    }
-
     private EventFullDto findEventById(Long eventId) {
         return eventMapper.toFullDto(eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException(String.format("Event with id %s not found", eventId))));
     }
+
+    private static void checkStatus(List<ParticipationRequest> eventRegistrations) {
+        for (ParticipationRequest eventRegistration : eventRegistrations) {
+            if (eventRegistration.getStatus() == CONFIRMED) {
+                throw new ConflictException("Participation was confirmed");
+            }
+        }
+    }
+
     private void checkParticipationLimit(EventFullDto eventFullDto) {
         if (eventFullDto.getConfirmedRequests() >= eventFullDto.getParticipantLimit() && eventFullDto.getParticipantLimit() != 0) {
-            throw new ConflictException("ihfuiWHEFIuh");
+            throw new ConflictException("Фpplication limit has been exhausted");
         }
     }
 
@@ -187,19 +182,6 @@ public class ParticipationServiceImpl implements ParticipationPrivateService {
     private void checkEventIsPublished(EventFullDto eventFullDto) {
         if (!Objects.equals(eventFullDto.getState().toString(), State.PUBLISHED.toString())) {
             throw new ConflictException(String.format("Event with id :%s is not published", eventFullDto.getId()));
-        }
-    }
-
-    private void checkLimitsParticipants(EventFullDto eventFullDto) {
-        List<ParticipationRequestDto> listDto = participationMapper.toListDto(
-                participationRepository.findAllByEvent_IdAndStatus(eventFullDto.getId(), CONFIRMED));
-
-        System.err.println("List dto size " + listDto.size() + "\n" + "ParticipantLimit " + eventFullDto.getParticipantLimit());
-
-        if (eventFullDto.getParticipantLimit() != 0) {
-            if (eventFullDto.getConfirmedRequests() >= eventFullDto.getParticipantLimit()) {
-                throw new ConflictException("Limit of participants has been reached");
-            }
         }
     }
 }

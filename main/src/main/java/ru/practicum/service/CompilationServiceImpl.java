@@ -40,7 +40,7 @@ public class CompilationServiceImpl implements CompilationAdminService, Compilat
     public CompilationDto addCompilationDto(UpdateCompilationRequest updateCompilationRequest) {
         Set<Event> allByIdIn;
         if (updateCompilationRequest.getEvents() != null) {
-             allByIdIn = eventRepository.findAllByIdIn(updateCompilationRequest.getEvents());
+            allByIdIn = eventRepository.findAllByIdIn(updateCompilationRequest.getEvents());
         } else {
             allByIdIn = Collections.emptySet();
         }
@@ -60,7 +60,7 @@ public class CompilationServiceImpl implements CompilationAdminService, Compilat
         CompilationDto compilationDto = findCompilationById(compId);
         Set<Event> allByIdIn;
         if (updateCompilationRequest.getEvents() != null) {
-             allByIdIn = eventRepository.findAllByIdIn(updateCompilationRequest.getEvents());
+            allByIdIn = eventRepository.findAllByIdIn(updateCompilationRequest.getEvents());
         } else {
             allByIdIn = Collections.emptySet();
         }
@@ -85,7 +85,7 @@ public class CompilationServiceImpl implements CompilationAdminService, Compilat
     }
 
     @Override
-    public List<CompilationDto> findByPinned(Boolean pinned, Integer from, Integer size) {
+    public List<CompilationDto> findByPinned(Boolean pinned, int from, int size) {
         Sort sort = Sort.by(Sort.Direction.DESC, "id");
         Pageable pageable = PageRequest.of(from, size, sort);
         List<CompilationDto> listDto;
