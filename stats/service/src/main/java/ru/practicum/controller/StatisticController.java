@@ -34,10 +34,10 @@ public class StatisticController {
     /**
      * Retrieves a list of ViewStatsDto objects based on the specified start and end dates, uniqueness flag, and URI filter.
      *
-     * @param start   The start date of the statistics range.
-     * @param end     The end date of the statistics range.
-     * @param uris    A list of URIs to filter the statistics by. Only the statistics for the specified URIs will be included in the result. (optional)
-     * @param unique  A boolean flag indicating whether to return unique statistics. Defaults to false if not specified.
+     * @param start  The start date of the statistics range.
+     * @param end    The end date of the statistics range.
+     * @param uris   A list of URIs to filter the statistics by. Only the statistics for the specified URIs will be included in the result. (optional)
+     * @param unique A boolean flag indicating whether to return unique statistics. Defaults to false if not specified.
      * @return A list of ViewStatsDto objects representing the view statistics for the specified period, uniqueness flag, and URI filter.
      */
     @GetMapping("/stats")
@@ -47,7 +47,7 @@ public class StatisticController {
                                               @RequestParam(defaultValue = "false") boolean unique) {
         System.err.println("start " + start);
         System.err.println("end " + end);
-        System.err.println("controller " + uris );
+        System.err.println("controller " + uris);
         return statisticService.getAllViewStatsDto(start, end, unique, uris);
     }
 }
