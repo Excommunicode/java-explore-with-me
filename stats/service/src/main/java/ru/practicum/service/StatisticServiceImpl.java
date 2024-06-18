@@ -14,10 +14,7 @@ import ru.practicum.repository.StatisticRepository;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static ru.practicum.constant.StatisticConstant.DATE_TIME_FORMATTER;
@@ -46,14 +43,18 @@ public class StatisticServiceImpl implements StatisticService {
         LocalDateTime startTime = LocalDateTime.parse(start, formatter);
         LocalDateTime endTime = LocalDateTime.parse(end, formatter);
 
+        List<String> stringList = uri.parallelStream()
+                .map(s -> s.replace("[", "").replace("]", ""))
+                .collect(Collectors.toList());
+
         List<StatisticProjection> allByTimestampBetween;
         if (uri == null || uri.isEmpty()) {
             allByTimestampBetween = unique ? statisticRepository.findAllByTimestampBetween(startTime, endTime)
                     : statisticRepository.findAllStatisticProjectionByTimestampBetween(startTime, endTime);
         } else {
             allByTimestampBetween = unique ?
-                    statisticRepository.findAllStatisticProjectionByTimestampBetweenAndUri(startTime, endTime, uri)
-                    : statisticRepository.findAllStatisticProjectionByTimestampBetweenAndUriIn(startTime, endTime, uri);
+                    statisticRepository.findAllStatisticProjectionByTimestampBetweenAndUri(startTime, endTime, stringList)
+                    : statisticRepository.findAllStatisticProjectionByTimestampBetweenAndUriIn(startTime, endTime, stringList);
         }
 
         List<ViewStatsDto> results = findUnique(allByTimestampBetween);
@@ -71,10 +72,10 @@ public class StatisticServiceImpl implements StatisticService {
                 viewStatsDtoMap.put(key, ViewStatsDto.builder()
                         .app(statisticProjection.getApp())
                         .uri(statisticProjection.getUri())
-                        .hits(1L)
+                        .hits(1)
                         .build());
             } else {
-                viewStatsDtoMap.get(key).setHits(viewStatsDtoMap.get(key).getHits() + 1L);
+                viewStatsDtoMap.get(key).setHits(viewStatsDtoMap.get(key).getHits() + 1);
             }
         }
         return viewStatsDtoMap.values().stream()

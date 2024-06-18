@@ -45,6 +45,9 @@ public class StatisticController {
                                               @RequestParam String end,
                                               @RequestParam(required = false) List<String> uris,
                                               @RequestParam(defaultValue = "false") boolean unique) {
+        System.err.println("start " + start);
+        System.err.println("end " + end);
+        System.err.println("controller " + uris );
         return statisticService.getAllViewStatsDto(start, end, unique, uris);
     }
 }
