@@ -66,6 +66,5 @@ public interface EventMapper {
     @Mapping(target = "eventDate", source = "eventDate", dateFormat = DATE_TIME_FORMATTER)
     UpdateEventUserRequestOutput toUpdateDtoOutput(Event event);
 
-
     Set<EventShortDto> toShortDto(Set<Event> eventFullDto);
 }

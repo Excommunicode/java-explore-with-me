@@ -61,6 +61,10 @@ public class EventPrivateController {
     @PatchMapping("/{eventId}/requests")
     public EventRequestStatusUpdateResult changeStateRequests(@PathVariable Long userId, @PathVariable Long eventId,
                                                               @RequestBody EventRequestStatusUpdateRequest newRequestsEvent) {
+        for (Long requestId : newRequestsEvent.getRequestIds()) {
+            System.err.println("requestIds " + requestId);
+        }
+        System.err.println(newRequestsEvent.getRequestIds().size());
         return eventRegistrationService.changeStateRequests(userId, eventId, newRequestsEvent);
     }
 

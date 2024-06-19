@@ -21,6 +21,7 @@ import ru.practicum.repository.EventRepository;
 import ru.practicum.repository.ParticipationRepository;
 import ru.practicum.service.impl.ParticipationPrivateService;
 
+import javax.persistence.EntityManager;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
@@ -41,6 +42,7 @@ public class ParticipationServiceImpl implements ParticipationPrivateService {
     private final ParticipationMapper participationMapper;
     private final EventRepository eventRepository;
     private final EventMapper eventMapper;
+    private final EntityManager entityManager;
 
 
     @Transactional
@@ -72,15 +74,12 @@ public class ParticipationServiceImpl implements ParticipationPrivateService {
 
         List<ParticipationRequest> eventRegistrations = participationRepository.findAllByIds(newRequestsEvent.getRequestIds());
         EventFullDto eventFullDto = findEventById(eventId);
-        checkStatus(eventRegistrations);
+        validParticipation(newRequestsEvent, eventFullDto, eventRegistrations);
 
-        for (ParticipationRequest eventRegistration : eventRegistrations) {
-            checkParticipationLimit(eventFullDto);
-            eventRegistration.setStatus(newRequestsEvent.getStatus());
-            eventFullDto.setConfirmedRequests(eventFullDto.getConfirmedRequests() + 1);
-            eventRepository.save(eventMapper.toModelFromFullDto(eventFullDto));
-            participationRepository.updateByIdStatus(eventRegistration.getId(), eventRegistration.getStatus().toString());
-        }
+        participationRepository.updateByIdIn(newRequestsEvent.getRequestIds(), newRequestsEvent.getStatus().toString());
+        eventRepository.updateByIdInAndConfirmedRequests(eventId, newRequestsEvent.getRequestIds().size());
+
+        entityManager.clear();
 
         List<ParticipationRequestDto> events = participationMapper.toListDto(participationRepository.findAll());
 
@@ -99,6 +98,7 @@ public class ParticipationServiceImpl implements ParticipationPrivateService {
                 .confirmedRequests(confirmedRequests)
                 .rejectedRequests(rejectedRequests)
                 .build();
+
         log.info("Request status updated. Confirmed: {}, Rejected: {}", confirmedRequests.size(), rejectedRequests.size());
         return result;
     }
@@ -139,6 +139,23 @@ public class ParticipationServiceImpl implements ParticipationPrivateService {
     private EventFullDto findEventById(Long eventId) {
         return eventMapper.toFullDto(eventRepository.findById(eventId)
                 .orElseThrow(() -> new NotFoundException(String.format("Event with id %s not found", eventId))));
+    }
+
+    private static void validParticipation(EventRequestStatusUpdateRequest newRequestsEvent, EventFullDto eventFullDto, List<ParticipationRequest> eventRegistrations) {
+        switch (newRequestsEvent.getStatus()) {
+            case CONFIRMED:
+                eventFullDto.setConfirmedRequests(eventFullDto.getConfirmedRequests() + newRequestsEvent.getRequestIds().size());
+            case CANCELED:
+                eventFullDto.setConfirmedRequests(eventFullDto.getConfirmedRequests() - newRequestsEvent.getRequestIds().size());
+        }
+        if (eventFullDto.getConfirmedRequests() >= eventFullDto.getParticipantLimit() && eventFullDto.getParticipantLimit() != 0) {
+            throw new ConflictException("Limit of requests for applications has been exceeded");
+        }
+        for (ParticipationRequest eventRegistration : eventRegistrations) {
+            if (eventRegistration.getStatus() == CONFIRMED) {
+                throw new ConflictException(String.format("Request with id %s has already been confirmed", eventRegistration.getId()));
+            }
+        }
     }
 
     private static void checkStatus(List<ParticipationRequest> eventRegistrations) {

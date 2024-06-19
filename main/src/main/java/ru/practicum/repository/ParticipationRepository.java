@@ -3,6 +3,7 @@ package ru.practicum.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import ru.practicum.enums.ParticipationRequestStatus;
 import ru.practicum.enums.State;
 import ru.practicum.model.ParticipationRequest;
@@ -42,6 +43,9 @@ public interface ParticipationRepository extends JpaRepository<ParticipationRequ
     @Modifying
     @Query(nativeQuery = true,
             value = "UPDATE participation_requests  SET status = :status WHERE id IN :participationIds")
-    void updateByIdIn(List<Long> participationIds, String status);
+    void updateByIdIn(@Param("participationIds") List<Long> participationIds, @Param("status") String status);
 
+    @Modifying
+    @Query("UPDATE ParticipationRequest pr SET pr.status = :status WHERE pr.id IN :ids")
+    void updateStatuses(@Param("ids") List<Long> ids, @Param("status") String status);
 }

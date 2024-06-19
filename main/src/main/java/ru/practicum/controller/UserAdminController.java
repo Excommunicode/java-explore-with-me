@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.dto.user.UserDto;
-import ru.practicum.service.impl.UserService;
+import ru.practicum.service.impl.UserAdminService;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -17,8 +17,8 @@ import static ru.practicum.constant.UserConstant.LIMIT;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(path = "/admin/users")
-public class UserController {
-    private final UserService userService;
+public class UserAdminController {
+    private final UserAdminService userService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)

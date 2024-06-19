@@ -27,7 +27,7 @@ public class Event {
     private Category category;
 
     @Column(name = "confirmed_requests")
-    private Integer confirmedRequests = 0;
+    private int confirmedRequests;
 
     @Column(name = "created_on")
     private LocalDateTime createdOn;
@@ -56,7 +56,7 @@ public class Event {
     private LocalDateTime publishedOn;
 
     @Column(nullable = false)
-    private Boolean requestModeration = false;
+    private boolean requestModeration;
 
     @Enumerated(EnumType.STRING)
     @JoinColumn(name = "state")
@@ -65,6 +65,5 @@ public class Event {
     @Column(nullable = false)
     private String title;
 
-    @Column
-    private Integer views = 0;
+    private int views;
 }

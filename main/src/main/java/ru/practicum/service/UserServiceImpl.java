@@ -12,7 +12,7 @@ import ru.practicum.dto.user.UserDto;
 import ru.practicum.exceptiion.ConflictException;
 import ru.practicum.mapper.UserMapper;
 import ru.practicum.repository.UserRepository;
-import ru.practicum.service.impl.UserService;
+import ru.practicum.service.impl.UserAdminService;
 
 import java.util.List;
 
@@ -20,7 +20,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
-public class UserServiceImpl implements UserService {
+public class UserServiceImpl implements UserAdminService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
 

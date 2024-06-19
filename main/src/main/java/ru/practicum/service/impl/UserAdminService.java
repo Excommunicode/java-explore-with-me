@@ -4,7 +4,7 @@ import ru.practicum.dto.user.UserDto;
 
 import java.util.List;
 
-public interface UserService {
+public interface UserAdminService {
     UserDto addUserDto(UserDto userDto);
 
     List<UserDto> getUsers(Long id, int from, int size);

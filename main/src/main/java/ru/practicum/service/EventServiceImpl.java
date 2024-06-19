@@ -108,50 +108,51 @@ public class EventServiceImpl implements EventPrivateService, EventPublicService
 
         Pageable pageable = PageRequest.of(from, size, Sort.by(Sort.Direction.DESC, "id"));
 
-        List<EventFullDto> eventFullDtos = new ArrayList<>();
-
+        List<EventFullDto> eventFullDtoArrayList = new ArrayList<>();
 
         if (Objects.nonNull(rangeStart) || Objects.nonNull(states)) {
-            eventFullDtos = eventMapper.toDtoList(eventRepository.findAllByStateAndEventDate(states, rangeStart, rangeEnd, from, size));
-        }
-
-        if (Objects.nonNull(users) || Objects.nonNull(categories)) {
-            eventFullDtos = eventMapper.toDtoList(
+            eventFullDtoArrayList = eventMapper.toDtoList(eventRepository.findAllByStateAndEventDate(states, rangeStart, rangeEnd, from, size));
+        } else if (Objects.nonNull(users) || Objects.nonNull(categories)) {
+            eventFullDtoArrayList = eventMapper.toDtoList(
                     eventRepository.findAllByInitiator_IdInAndCategory(users, categories, from, size));
+        } else {
+            if (eventFullDtoArrayList.isEmpty()) {
+                eventFullDtoArrayList = eventMapper.toDtoList(eventRepository.findAll(pageable).getContent());
+            }
         }
 
-        List<Long> collect = eventFullDtos.stream()
+        List<Long> eventsIds = eventFullDtoArrayList.stream()
                 .map(EventFullDto::getId)
                 .collect(Collectors.toList());
 
-        List<ParticipationRequest> allByEventIdIn = participationRepository.findAllByEvent_IdInAndAndStatus(collect, ParticipationRequestStatus.CONFIRMED);
-
-        if (eventFullDtos.isEmpty()) {
-            eventFullDtos = eventMapper.toDtoList(eventRepository.findAll(pageable).getContent());
-        }
+        List<ParticipationRequest> participationRequests = participationRepository.findAllByEvent_IdInAndAndStatus(eventsIds, ParticipationRequestStatus.CONFIRMED);
 
         int x = 0;
-        for (EventFullDto eventFullDto : eventFullDtos) {
-            for (ParticipationRequest participationRequest : allByEventIdIn) {
+        for (EventFullDto eventFullDto : eventFullDtoArrayList) {
+            for (ParticipationRequest participationRequest : participationRequests) {
                 if (Objects.equals(eventFullDto.getId(), participationRequest.getEvent().getId())) {
                     x++;
                 }
             }
             eventFullDto.setConfirmedRequests(x);
+            x = 0;
         }
 
-        return eventFullDtos;
+        return eventFullDtoArrayList;
     }
 
     @Override
     public List<EventFullDto> getEventByUserId(Long userId, int from, int size) {
         log.debug("Fetching events initiated by user ID: {}, page: {}, size: {}", userId, from, size);
+
         Pageable pageable = PageRequest.of(from, size);
         List<EventFullDto> dtoList = eventMapper.toDtoList(eventRepository.findAllByInitiator_Id(userId, pageable));
+
         if (dtoList.isEmpty()) {
             log.info("No events found for user ID: {}", userId);
             return Collections.emptyList();
         }
+
         log.debug("Found {} events for user ID: {}", dtoList.size(), userId);
         return dtoList;
     }
@@ -159,14 +160,16 @@ public class EventServiceImpl implements EventPrivateService, EventPublicService
     @Override
     public EventFullDto getEventForVerificationUser(Long userId, Long eventId) {
         log.debug("Verifying event with ID: {} for user ID: {}", eventId, userId);
+
         if (!userRepository.existsById(userId)) {
             log.warn("User verification failed for user ID: {}", userId);
             throw new BadRequestException("Invalid user ID: " + userId);
         }
-        return eventMapper.toFullDto(eventRepository.findById(eventId)
-                .orElseThrow(() -> new NotFoundException("Event not found")));
+
+        return findEvenFullDtoById(eventId);
     }
 
+    @Transactional
     @Override
     public List<EventFullDto> getEventsDto(String text, List<Long> categories, boolean paid,
                                            LocalDateTime rangeStart, LocalDateTime rangeEnd, boolean onlyAvailable,
@@ -194,6 +197,7 @@ public class EventServiceImpl implements EventPrivateService, EventPublicService
         return dtoList;
     }
 
+    @Transactional
     @Override
     public EventFullDto getEventByIdPublic(Long id, HttpServletRequest httpServletRequest) {
         log.debug("Request to receive an event with id: {}", id);
@@ -332,41 +336,53 @@ public class EventServiceImpl implements EventPrivateService, EventPublicService
     }
 
     private void validateUpdateRequest(Long userId, Event event, UpdateEventUserRequest updateEventUserRequest) {
+
         if (updateEventUserRequest.getParticipantLimit() != null && updateEventUserRequest.getParticipantLimit() < 0) {
-            throw new BadRequestException("ParticipantLimit cannot be negative");
+            throw new BadRequestException("ParticipantLimit cannot be negative or null");
         }
+
         if (!event.getInitiator().getId().equals(userId)) {
             throw new BadRequestException("Unauthorized attempt to update event by user ID: " + userId);
         }
+
         if (event.getState() == PUBLISHED) {
             throw new ConflictException("You cannot change a published event");
         }
+
     }
 
     private void applyEventUpdates(Event event, UpdateEventUserRequest updateEventUserRequest) {
-        if (updateEventUserRequest.getAnnotation() != null) {
+
+        if (Objects.nonNull(updateEventUserRequest.getAnnotation())) {
             event.setAnnotation(updateEventUserRequest.getAnnotation());
         }
-        if (updateEventUserRequest.getCategoryDto() != null) {
+
+        if (Objects.nonNull(updateEventUserRequest.getCategoryDto())) {
             event.setCategory(categoryMapper.toModel(updateEventUserRequest.getCategoryDto()));
         }
-        if (updateEventUserRequest.getDescription() != null) {
+
+        if (Objects.nonNull(updateEventUserRequest.getDescription())) {
             event.setDescription(updateEventUserRequest.getDescription());
         }
-        if (updateEventUserRequest.getEventDate() != null) {
+
+        if (Objects.nonNull(updateEventUserRequest.getEventDate())) {
             LocalDateTime dateTime = parseEventDate(updateEventUserRequest.getEventDate());
             checkEventDate(dateTime);
             event.setEventDate(dateTime);
         }
-        if (updateEventUserRequest.getRequestModeration() != null) {
+
+        if (Objects.nonNull(updateEventUserRequest.getRequestModeration())) {
             event.setRequestModeration(updateEventUserRequest.getRequestModeration());
         }
-        if (updateEventUserRequest.getStateAction() != null) {
+
+        if (Objects.nonNull(updateEventUserRequest.getStateAction())) {
             applyStateAction(event, updateEventUserRequest.getStateAction());
         }
-        if (updateEventUserRequest.getTitle() != null) {
+
+        if (Objects.nonNull(updateEventUserRequest.getTitle())) {
             event.setTitle(updateEventUserRequest.getTitle());
         }
+
     }
 
     private LocalDateTime parseEventDate(String dateTimeString) {
