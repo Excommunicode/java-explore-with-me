@@ -215,7 +215,6 @@ public class EventServiceImpl implements EventPrivateService, EventPublicService
         String uri = "/events/" + event.getId();
         List<String> uris = List.of(uri);
 
-
         String startTime = event.getPublishedOn().minusHours(1).format(DateTimeFormatter.ofPattern(DATE_TIME_FORMATTER));
         String endTime = LocalDateTime.now().plusMinutes(1).format(DateTimeFormatter.ofPattern(DATE_TIME_FORMATTER));
 

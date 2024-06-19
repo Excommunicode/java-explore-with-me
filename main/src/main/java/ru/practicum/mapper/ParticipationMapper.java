@@ -29,6 +29,5 @@ public interface ParticipationMapper {
     })
     ParticipationRequest toModel(Long userId, Long event, LocalDateTime created, ParticipationRequestStatus status);
 
-
     List<ParticipationRequestDto> toListDto(List<ParticipationRequest> events);
 }

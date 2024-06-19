@@ -5,7 +5,6 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import ru.practicum.enums.ParticipationRequestStatus;
-import ru.practicum.enums.State;
 import ru.practicum.model.ParticipationRequest;
 
 import java.util.List;
@@ -16,7 +15,9 @@ public interface ParticipationRepository extends JpaRepository<ParticipationRequ
 
     List<ParticipationRequest> findAllByRequester_Id(Long userId);
 
-    boolean existsAllByRequester_IdAndEvent_Id(Long userId, Long eventId);
+    boolean existsByRequester_IdAndEvent_id(Long userId, Long eventId);
+
+    List<ParticipationRequest> findAllByEvent_IdInAndAndStatus(List<Long> eventIds, ParticipationRequestStatus participationRequest);
 
     @Modifying
     @Query(nativeQuery = true,
@@ -29,23 +30,8 @@ public interface ParticipationRepository extends JpaRepository<ParticipationRequ
                     "WHERE id IN :requestIds")
     List<ParticipationRequest> findAllByIds(List<Long> requestIds);
 
-    boolean existsByEvent_IdAndEvent_State(Long eventId, State state);
-
-    List<ParticipationRequest> findAllByEvent_IdInAndAndStatus(List<Long> eventIds, ParticipationRequestStatus participationRequest);
-
-    List<ParticipationRequest> findByEvent_Id(Long eventId);
-
-    boolean existsByRequester_IdAndEvent_id(Long userId, Long eventId);
-
-    List<ParticipationRequest> findAllByEvent_IdAndStatus(Long eventId, ParticipationRequestStatus status);
-
-
     @Modifying
     @Query(nativeQuery = true,
             value = "UPDATE participation_requests  SET status = :status WHERE id IN :participationIds")
     void updateByIdIn(@Param("participationIds") List<Long> participationIds, @Param("status") String status);
-
-    @Modifying
-    @Query("UPDATE ParticipationRequest pr SET pr.status = :status WHERE pr.id IN :ids")
-    void updateStatuses(@Param("ids") List<Long> ids, @Param("status") String status);
 }
