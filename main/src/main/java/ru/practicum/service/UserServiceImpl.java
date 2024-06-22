@@ -42,14 +42,14 @@ public class UserServiceImpl implements UserAdminService {
 
     @Override
     public List<UserDto> getUsers(Long id, int from, int size) {
-        Pageable pageable = PageRequest.of(from, size);
+        Pageable pageable = PageRequest.of(from > 0 ? from / size : 0, size);
         return id != null ? userMapper.toDtoList(userRepository.findAllById(id, pageable)) :
                 userMapper.toDtoList(userRepository.findAll(pageable).getContent());
     }
 
     private void checkExistsEmail(String email) {
         if (userRepository.existsByEmail(email)) {
-            throw new ConflictException("This email has already taken");
+            throw new ConflictException(String.format("This email %s has already taken", email));
         }
     }
 }

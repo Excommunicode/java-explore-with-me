@@ -40,6 +40,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static ru.practicum.constant.EventConstant.DATE_TIME_FORMATTER;
@@ -106,15 +109,15 @@ public class EventServiceImpl implements EventPrivateService, EventPublicService
     public List<EventFullDto> findEventForAdmin(List<Long> users, List<String> states, List<Long> categories,
                                                 LocalDateTime rangeStart, LocalDateTime rangeEnd, int from, int size) {
 
-        Pageable pageable = PageRequest.of(from, size, Sort.by(Sort.Direction.DESC, "id"));
+        Pageable pageable = PageRequest.of(from > 0 ? from / size : 0, size, Sort.by(Sort.Direction.DESC, "id"));
 
         List<EventFullDto> eventFullDtoArrayList = new ArrayList<>();
 
         if (Objects.nonNull(rangeStart) || Objects.nonNull(states)) {
-            eventFullDtoArrayList = eventMapper.toDtoList(eventRepository.findAllByStateAndEventDate(states, rangeStart, rangeEnd, from, size));
+            eventFullDtoArrayList = eventMapper.toDtoList(eventRepository.findAllByStateAndEventDate(states, rangeStart, rangeEnd, pageable));
         } else if (Objects.nonNull(users) || Objects.nonNull(categories)) {
             eventFullDtoArrayList = eventMapper.toDtoList(
-                    eventRepository.findAllByInitiator_IdInAndCategory(users, categories, from, size));
+                    eventRepository.findAllByInitiator_IdInAndCategory(users, categories, pageable));
         } else {
             if (eventFullDtoArrayList.isEmpty()) {
                 eventFullDtoArrayList = eventMapper.toDtoList(eventRepository.findAll(pageable).getContent());
@@ -125,18 +128,22 @@ public class EventServiceImpl implements EventPrivateService, EventPublicService
                 .map(EventFullDto::getId)
                 .collect(Collectors.toList());
 
-        List<ParticipationRequest> participationRequests = participationRepository.findAllByEvent_IdInAndAndStatus(eventsIds, ParticipationRequestStatus.CONFIRMED);
+        List<ParticipationRequest> participationRequests = participationRepository.findAllByEventIdInAndStatus(eventsIds, ParticipationRequestStatus.CONFIRMED);
 
-        int x = 0;
+        ExecutorService executor = Executors.newFixedThreadPool(4);
+
         for (EventFullDto eventFullDto : eventFullDtoArrayList) {
-            for (ParticipationRequest participationRequest : participationRequests) {
-                if (Objects.equals(eventFullDto.getId(), participationRequest.getEvent().getId())) {
-                    x++;
+            executor.submit(() -> {
+                AtomicInteger x = new AtomicInteger(0);
+                for (ParticipationRequest participationRequest : participationRequests) {
+                    if (Objects.equals(eventFullDto.getId(), participationRequest.getEvent().getId())) {
+                        x.getAndIncrement();
+                    }
                 }
-            }
-            eventFullDto.setConfirmedRequests(x);
-            x = 0;
+                eventFullDto.setConfirmedRequests(x.get());
+            });
         }
+        executor.shutdown();
 
         return eventFullDtoArrayList;
     }
@@ -145,7 +152,7 @@ public class EventServiceImpl implements EventPrivateService, EventPublicService
     public List<EventFullDto> getEventByUserId(Long userId, int from, int size) {
         log.debug("Fetching events initiated by user ID: {}, page: {}, size: {}", userId, from, size);
 
-        Pageable pageable = PageRequest.of(from, size);
+        Pageable pageable = PageRequest.of(from > 0 ? from / size : 0, size);
         List<EventFullDto> dtoList = eventMapper.toDtoList(eventRepository.findAllByInitiator_Id(userId, pageable));
 
         if (dtoList.isEmpty()) {
@@ -178,7 +185,7 @@ public class EventServiceImpl implements EventPrivateService, EventPublicService
         Specification<Event> specification = Specification.where(null);
 
 
-        Pageable pageable = PageRequest.of(from, size, Sort.by(Sort.Direction.DESC, "id"));
+        Pageable pageable = PageRequest.of(from > 0 ? from / size : 0, size, Sort.by(Sort.Direction.DESC, "id"));
 
         specification = applyTextFilter(specification, text);
         specification = applyCategoryFilter(specification, categories);

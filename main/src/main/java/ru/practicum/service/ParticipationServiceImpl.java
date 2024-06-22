@@ -72,7 +72,7 @@ public class ParticipationServiceImpl implements ParticipationPrivateService {
     public EventRequestStatusUpdateResult changeStateRequests(Long userId, Long eventId, EventRequestStatusUpdateRequest newRequestsEvent) {
         log.info("Changing state of participation requests for user {} on event {}", userId, eventId);
 
-        List<ParticipationRequest> eventRegistrations = participationRepository.findAllByIds(newRequestsEvent.getRequestIds());
+        List<ParticipationRequest> eventRegistrations = participationRepository.findAllByIdIn(newRequestsEvent.getRequestIds());
         EventFullDto eventFullDto = findEventById(eventId);
         validParticipation(newRequestsEvent, eventFullDto, eventRegistrations);
 
@@ -126,7 +126,7 @@ public class ParticipationServiceImpl implements ParticipationPrivateService {
     @Override
     public List<ParticipationRequestDto> findRequestRegistration(Long userId, Long eventId) {
         log.info("Searching for request registrations for user {} and event {}", userId, eventId);
-        List<ParticipationRequestDto> listDto = participationMapper.toListDto(participationRepository.findAllByEvent_Initiator_IdAndAndEvent_id(userId, eventId));
+        List<ParticipationRequestDto> listDto = participationMapper.toListDto(participationRepository.findAllByEventInitiatorIdAndEventId(userId, eventId));
         if (listDto.isEmpty()) {
             log.info("No registrations found for user {} and event {}", userId, eventId);
             return Collections.emptyList();
@@ -154,14 +154,6 @@ public class ParticipationServiceImpl implements ParticipationPrivateService {
         for (ParticipationRequest eventRegistration : eventRegistrations) {
             if (eventRegistration.getStatus() == CONFIRMED) {
                 throw new ConflictException(String.format("Request with id %s has already been confirmed", eventRegistration.getId()));
-            }
-        }
-    }
-
-    private static void checkStatus(List<ParticipationRequest> eventRegistrations) {
-        for (ParticipationRequest eventRegistration : eventRegistrations) {
-            if (eventRegistration.getStatus() == CONFIRMED) {
-                throw new ConflictException("Participation was confirmed");
             }
         }
     }

@@ -87,7 +87,7 @@ public class CompilationServiceImpl implements CompilationAdminService, Compilat
     @Override
     public List<CompilationDto> findByPinned(Boolean pinned, int from, int size) {
         Sort sort = Sort.by(Sort.Direction.DESC, "id");
-        Pageable pageable = PageRequest.of(from, size, sort);
+        Pageable pageable = PageRequest.of(from > 0 ? from / size : 0, size, sort);
         List<CompilationDto> listDto;
         if (pinned != null) {
             listDto = compilationMapper.toListDto(compilationRepository.findAllByPinned(pinned, pageable));
