@@ -1,7 +1,6 @@
 package ru.practicum.controller;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.dto.user.UserDto;
@@ -13,7 +12,6 @@ import java.util.List;
 import static ru.practicum.constant.UserConstant.INITIAL_X;
 import static ru.practicum.constant.UserConstant.LIMIT;
 
-@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(path = "/admin/users")

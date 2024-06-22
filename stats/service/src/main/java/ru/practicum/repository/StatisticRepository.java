@@ -18,7 +18,7 @@ public interface StatisticRepository extends JpaRepository<Statistic, Long> {
      */
     @Query("SELECT s.app, s.uri " +
             "FROM Statistic s  " +
-            "WHERE s.timestamp BETWEEN :start AND :end " +
+            "WHERE (s.timestamp BETWEEN :start AND :end) " +
             "GROUP BY s.app, s.uri")
     List<StatisticProjection> findAllByTimestampBetween(LocalDateTime start, LocalDateTime end);
 

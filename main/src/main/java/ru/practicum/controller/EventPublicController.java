@@ -4,11 +4,16 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.dto.comment.CommentDto;
 import ru.practicum.dto.event.EventFullDto;
+import ru.practicum.enums.CommentSort;
 import ru.practicum.enums.EventSort;
+import ru.practicum.service.impl.CommentPublicService;
 import ru.practicum.service.impl.EventPublicService;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -22,19 +27,20 @@ import static ru.practicum.constant.UserConstant.LIMIT;
 @RequestMapping(path = "/events")
 public class EventPublicController {
     private final EventPublicService eventPublicService;
+    private final CommentPublicService commentPublicService;
 
     @GetMapping
-    public List<EventFullDto> getPublicEventDto(@RequestParam(required = false) String text,
-                                                @RequestParam(required = false) List<Long> categories,
-                                                @RequestParam(required = false) boolean paid,
-                                                @RequestParam(required = false) @DateTimeFormat(pattern = DATE_TIME_FORMATTER) LocalDateTime rangeStart,
-                                                @RequestParam(required = false) @DateTimeFormat(pattern = DATE_TIME_FORMATTER) LocalDateTime rangeEnd,
-                                                @RequestParam(defaultValue = "false", required = false) Boolean onlyAvailable,
-                                                @RequestParam(defaultValue = INITIAL_X, required = false) int from,
-                                                @RequestParam(defaultValue = LIMIT, required = false) int size,
-                                                @RequestParam(required = false) EventSort sort,
-                                                HttpServletRequest httpServletRequest) {
-
+    public List<EventFullDto> getPublicEventDto(
+            @RequestParam(required = false) String text,
+            @RequestParam(required = false) List<Long> categories,
+            @RequestParam(required = false) boolean paid,
+            @RequestParam(required = false) @DateTimeFormat(pattern = DATE_TIME_FORMATTER) LocalDateTime rangeStart,
+            @RequestParam(required = false) @DateTimeFormat(pattern = DATE_TIME_FORMATTER) LocalDateTime rangeEnd,
+            @RequestParam(defaultValue = "false") Boolean onlyAvailable,
+            @RequestParam(defaultValue = INITIAL_X) int from,
+            @RequestParam(defaultValue = LIMIT) int size,
+            @RequestParam(required = false) EventSort sort,
+            HttpServletRequest httpServletRequest) {
         return eventPublicService.getEventsDto(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, sort, from, size, httpServletRequest);
     }
 
@@ -42,4 +48,18 @@ public class EventPublicController {
     public EventFullDto getByIdPublic(@PathVariable Long id, HttpServletRequest httpServletRequest) {
         return eventPublicService.getEventByIdPublic(id, httpServletRequest);
     }
+
+    @GetMapping("/{eventId}/comments")
+    public List<CommentDto> getAllCommentsDto(@PathVariable Long eventId,
+                                              @RequestParam(required = false) CommentSort commentSort,
+                                              @PositiveOrZero @RequestParam(defaultValue = INITIAL_X) int from,
+                                              @Positive @RequestParam(defaultValue = LIMIT) int size) {
+        return commentPublicService.findCommentsDtoById(eventId, commentSort, from, size);
+    }
+
+    @GetMapping("/{eventId}/comments/count")
+    public long countComments(@PathVariable Long eventId) {
+        return commentPublicService.countCommentsByEventId(eventId);
+    }
+
 }

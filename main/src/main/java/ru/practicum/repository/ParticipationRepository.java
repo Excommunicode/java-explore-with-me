@@ -11,27 +11,66 @@ import java.util.List;
 
 public interface ParticipationRepository extends JpaRepository<ParticipationRequest, Long> {
 
-    List<ParticipationRequest> findAllByEvent_Initiator_IdAndAndEvent_id(Long userId, Long eventId);
+    /**
+     * Finds all participation requests initiated by a specific user for a specific event.
+     *
+     * @param userId  the ID of the user who initiated the event.
+     * @param eventId the ID of the event for which participation requests are being searched.
+     * @return a list of {@link ParticipationRequest} that meet the criteria.
+     */
+    List<ParticipationRequest> findAllByEventInitiatorIdAndEventId(Long userId, Long eventId);
 
+    /**
+     * Retrieves all participation requests made by a specific requester.
+     *
+     * @param userId the ID of the requester whose participation requests are to be retrieved.
+     * @return a list of {@link ParticipationRequest} associated with the given requester ID.
+     */
     List<ParticipationRequest> findAllByRequester_Id(Long userId);
 
+    /**
+     * Checks if there is a participation request by a specific requester for a specific event.
+     *
+     * @param userId  the ID of the requester.
+     * @param eventId the ID of the event.
+     * @return true if such a request exists, false otherwise.
+     */
     boolean existsByRequester_IdAndEvent_id(Long userId, Long eventId);
 
-    List<ParticipationRequest> findAllByEvent_IdInAndAndStatus(List<Long> eventIds, ParticipationRequestStatus participationRequest);
+    /**
+     * Finds all participation requests with IDs in the provided list.
+     *
+     * @param requestIds a list of IDs for the participation requests to retrieve.
+     * @return a list of {@link ParticipationRequest} with IDs from the provided list.
+     */
+    List<ParticipationRequest> findAllByIdIn(List<Long> requestIds);
 
+    /**
+     * Finds all participation requests for events in the provided list with a specific status.
+     *
+     * @param eventIds a list of event IDs to search within.
+     * @param status   the status of the participation requests to filter by.
+     * @return a list of {@link ParticipationRequest} that meet the search criteria.
+     */
+    List<ParticipationRequest> findAllByEventIdInAndStatus(List<Long> eventIds, ParticipationRequestStatus status);
+
+    /**
+     * Updates the status of a participation request by its ID.
+     *
+     * @param id     the ID of the participation request to update.
+     * @param status the new status to set for the participation request.
+     */
     @Modifying
-    @Query(nativeQuery = true,
-            value = "UPDATE participation_requests SET status = :status WHERE id = :id")
+    @Query(nativeQuery = true, value = "UPDATE participation_requests SET status = :status WHERE id = :id")
     void updateByIdStatus(Long id, String status);
 
-    @Query(nativeQuery = true,
-            value = "SELECT * " +
-                    "FROM participation_requests e " +
-                    "WHERE id IN :requestIds")
-    List<ParticipationRequest> findAllByIds(List<Long> requestIds);
-
+    /**
+     * Updates the status for multiple participation requests by their IDs.
+     *
+     * @param participationIds a list of IDs for the participation requests to update.
+     * @param status           the new status to apply to the participation requests.
+     */
     @Modifying
-    @Query(nativeQuery = true,
-            value = "UPDATE participation_requests  SET status = :status WHERE id IN :participationIds")
+    @Query(nativeQuery = true, value = "UPDATE participation_requests SET status = :status WHERE id IN :participationIds")
     void updateByIdIn(@Param("participationIds") List<Long> participationIds, @Param("status") String status);
 }
