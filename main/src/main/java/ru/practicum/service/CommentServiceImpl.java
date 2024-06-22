@@ -104,7 +104,7 @@ public class CommentServiceImpl implements CommentPrivateService, CommentPublicS
             log.info("No comments found for eventId: {}", eventId);
             return Collections.emptyList();
         }
-        log.info("Found {} comments for event: {}", commentsFromDb.size(), eventId);
+        log.info("Found {} size comments for event: {}", commentsFromDb.size(), eventId);
         return commentsFromDb;
     }
 
