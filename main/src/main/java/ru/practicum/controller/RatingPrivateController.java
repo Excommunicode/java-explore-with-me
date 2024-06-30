@@ -30,7 +30,8 @@ public class RatingPrivateController {
     }
 
     @PatchMapping("/{ratingId}")
-    public RatingDto updateRatingDto(@PathVariable Long userId, @PathVariable Long ratingId, @Valid @RequestBody NewRatingDto newRatingDto) {
+    public RatingDto updateRatingDto(@PathVariable Long userId, @PathVariable Long ratingId,
+                                     @Valid @RequestBody NewRatingDto newRatingDto) {
         return ratingPrivateService.updateRatingDto(userId, ratingId, newRatingDto);
     }
 
