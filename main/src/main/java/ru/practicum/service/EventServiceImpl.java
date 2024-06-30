@@ -170,7 +170,7 @@ public class EventServiceImpl implements EventPrivateService, EventPublicService
     public EventFullDto getEventForVerificationUser(Long userId, Long eventId, HttpServletRequest httpServletRequest) {
         log.debug("Verifying event with ID: {} for user ID: {}", eventId, userId);
 
-        if (!eventRepository.existsByIdAndInitiator(userId, eventId)) {
+        if (!eventRepository.existsByIdAndInitiator_Id(userId, eventId)) {
             recordRequestStats(httpServletRequest);
         }
 

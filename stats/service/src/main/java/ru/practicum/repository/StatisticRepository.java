@@ -1,6 +1,5 @@
 package ru.practicum.repository;
 
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import ru.practicum.model.Statistic;
@@ -49,7 +48,6 @@ public interface StatisticRepository extends JpaRepository<Statistic, Long> {
     List<StatisticProjection> findAllStatisticProjectionByTimestampBetweenAndUri(LocalDateTime start,
                                                                                  LocalDateTime end,
                                                                                  List<String> uri);
-
 
 
     /**
