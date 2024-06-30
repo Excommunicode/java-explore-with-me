@@ -1,9 +1,17 @@
 package ru.practicum.dto.user;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import ru.practicum.util.NotOnlySpaces;
 
-import javax.validation.constraints.*;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 @Getter
 @Setter
@@ -25,6 +33,4 @@ public class UserDto {
     @NotEmpty(message = "Email address cannot be empty")
     @Size(min = 6, max = 254, message = "Email address must be between 6 and 254 characters long")
     private String email;
-
-
 }

@@ -19,6 +19,7 @@ import java.util.List;
 public class StatsClient {
     private final RestTemplate restTemplate;
 
+
     @Autowired
     public StatsClient(@Value("${stat.server.url}") String serverUrl, RestTemplateBuilder builder) {
         restTemplate = builder

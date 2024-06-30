@@ -1,4 +1,4 @@
-package ru.practicum.dto.user;
+package ru.practicum.dto.rating;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -6,10 +6,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserShortDto {
+@Builder(toBuilder = true)
+public class RatingDto {
     private Long id;
-    private String name;
+    private Long userId;
+    private Long eventId;
+    private double assessment;
 }

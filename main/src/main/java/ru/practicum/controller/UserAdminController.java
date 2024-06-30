@@ -7,6 +7,8 @@ import ru.practicum.dto.user.UserDto;
 import ru.practicum.service.impl.UserAdminService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 import static ru.practicum.constant.UserConstant.INITIAL_X;
@@ -26,8 +28,8 @@ public class UserAdminController {
 
     @GetMapping
     public List<UserDto> getUsers(@RequestParam(value = "ids", required = false) Long id,
-                                  @RequestParam(defaultValue = INITIAL_X) int from,
-                                  @RequestParam(defaultValue = LIMIT) int size) {
+                                  @PositiveOrZero @RequestParam(defaultValue = INITIAL_X) int from,
+                                  @Positive @RequestParam(defaultValue = LIMIT) int size) {
         return userService.getUsers(id, from, size);
     }
 

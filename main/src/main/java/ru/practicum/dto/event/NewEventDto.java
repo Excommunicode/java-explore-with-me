@@ -17,6 +17,7 @@ public class NewEventDto {
     @NotEmpty(message = "Annotation cannot be empty")
     @Length(min = 20, max = 2000)
     private String annotation;
+
     private Long category;
 
     @NotOnlySpaces

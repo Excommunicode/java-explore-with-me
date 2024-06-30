@@ -27,7 +27,11 @@ import java.util.Set;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
+@Transactional(
+        readOnly = true,
+        isolation = Isolation.REPEATABLE_READ,
+        propagation = Propagation.REQUIRED
+)
 public class CompilationServiceImpl implements CompilationAdminService, CompilationPublicService {
     private final CompilationRepository compilationRepository;
     private final CompilationMapper compilationMapper;

@@ -28,4 +28,5 @@ public class EventFullDto {
     private State state;
     private String title;
     private Integer views;
+    private double assessment;
 }

@@ -2,7 +2,15 @@ package ru.practicum.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.dto.event.EventFullDto;
 import ru.practicum.dto.event.NewEventDto;
 import ru.practicum.dto.event.UpdateEventUserRequest;
@@ -14,6 +22,8 @@ import ru.practicum.service.impl.EventPrivateService;
 import ru.practicum.service.impl.ParticipationPrivateService;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 import static ru.practicum.constant.UserConstant.INITIAL_X;
@@ -33,9 +43,9 @@ public class EventPrivateController {
     }
 
     @GetMapping
-    public List<EventFullDto> getEventsByUserId(@PathVariable Long userId, @RequestParam(defaultValue = INITIAL_X) int from,
-                                                @RequestParam(defaultValue = LIMIT) int size) {
-
+    public List<EventFullDto> getEventsByUserId(@PathVariable Long userId,
+                                                @PositiveOrZero @RequestParam(defaultValue = INITIAL_X) int from,
+                                                @Positive @RequestParam(defaultValue = LIMIT) int size) {
         return eventPrivateService.getEventByUserId(userId, from, size);
     }
 
@@ -59,10 +69,6 @@ public class EventPrivateController {
     @PatchMapping("/{eventId}/requests")
     public EventRequestStatusUpdateResult changeStateRequests(@PathVariable Long userId, @PathVariable Long eventId,
                                                               @RequestBody EventRequestStatusUpdateRequest newRequestsEvent) {
-        for (Long requestId : newRequestsEvent.getRequestIds()) {
-            System.err.println("requestIds " + requestId);
-        }
-        System.err.println(newRequestsEvent.getRequestIds().size());
         return eventRegistrationService.changeStateRequests(userId, eventId, newRequestsEvent);
     }
 

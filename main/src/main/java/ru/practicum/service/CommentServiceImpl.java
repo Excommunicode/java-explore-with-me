@@ -11,14 +11,10 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.dto.comment.CommentDto;
 import ru.practicum.dto.comment.NewCommentDto;
-import ru.practicum.dto.event.EventFullDto;
-import ru.practicum.dto.user.UserDto;
 import ru.practicum.enums.CommentSort;
 import ru.practicum.exceptiion.ConflictException;
 import ru.practicum.exceptiion.NotFoundException;
 import ru.practicum.mapper.CommentMapper;
-import ru.practicum.mapper.EventMapper;
-import ru.practicum.mapper.UserMapper;
 import ru.practicum.repository.CommentRepository;
 import ru.practicum.repository.EventRepository;
 import ru.practicum.repository.UserRepository;
@@ -35,22 +31,25 @@ import java.util.Objects;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
+@Transactional(
+        readOnly = true,
+        isolation = Isolation.REPEATABLE_READ,
+        propagation = Propagation.REQUIRED
+)
 public class CommentServiceImpl implements CommentPrivateService, CommentPublicService, CommentAdminService {
     private final CommentRepository commentRepository;
     private final CommentMapper commentMapper;
     private final UserRepository userRepository;
-    private final UserMapper userMapper;
     private final EventRepository eventRepository;
-    private final EventMapper eventMapper;
     private final EntityManager entityManager;
+
 
     @Transactional
     @Override
     public CommentDto addCommentDto(Long userId, Long eventId, NewCommentDto newCommentDto) {
-        log.info("Adding comment for userId: {} and eventId: {}", userId, eventId);
+        log.debug("Adding comment for userId: {} and eventId: {}", userId, eventId);
         findUserById(userId);
-        findEventByid(eventId);
+        findEventById(eventId);
         CommentDto commentDto = commentMapper.toDto(commentRepository.save(
                 commentMapper.toModel(userId, eventId, newCommentDto, LocalDateTime.now())));
         log.info("Comment added successfully for userId: {} and eventId: {}", userId, eventId);
@@ -60,7 +59,7 @@ public class CommentServiceImpl implements CommentPrivateService, CommentPublicS
     @Transactional
     @Override
     public CommentDto updateCommentDto(Long userId, Long commentId, NewCommentDto newCommentDto) {
-        log.info("Updating comment for userId: {} and commentId: {}", userId, commentId);
+        log.debug("Updating comment for userId: {} and commentId: {}", userId, commentId);
         findUserById(userId);
 
         CommentDto commentDto = findCommentById(commentId);
@@ -77,7 +76,7 @@ public class CommentServiceImpl implements CommentPrivateService, CommentPublicS
     @Transactional
     @Override
     public void deleteCommentDto(Long userId, Long commentId) {
-        log.info("Deleting comment for userId: {} and commentId: {}", userId, commentId);
+        log.debug("Deleting comment for userId: {} and commentId: {}", userId, commentId);
         CommentDto commentDto = findCommentById(commentId);
         checkIsAuthor(userId, commentDto.getAuthor());
         commentRepository.deleteById(commentId);
@@ -86,7 +85,7 @@ public class CommentServiceImpl implements CommentPrivateService, CommentPublicS
 
     @Override
     public List<CommentDto> findCommentsDtoById(Long eventId, CommentSort commentSort, int from, int size) {
-        log.info("Finding comments for eventId: {} with sort: {} from: {} size: {}", eventId, commentSort, from, size);
+        log.debug("Finding comments for eventId: {} with sort: {} from: {} size: {}", eventId, commentSort, from, size);
         Pageable pageable = null;
         if (commentSort != null) {
             switch (commentSort) {
@@ -110,36 +109,48 @@ public class CommentServiceImpl implements CommentPrivateService, CommentPublicS
 
     @Override
     public int countCommentsByEventId(Long eventId) {
-        log.info("Counting comments for eventId: {}", eventId);
+        log.debug("Counting comments for eventId: {}", eventId);
+
         int count = commentRepository.countByEventId(eventId);
+
         log.info("Found {} comments for eventId: {}", count, eventId);
         return count;
     }
 
     @Override
     public void deleteCommentByAdmin(Long commentId) {
+
         eventRepository.deleteById(commentId);
     }
 
-    private UserDto findUserById(Long userId) {
-        return userMapper.toDto(userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException(String.format("User with id %s not found", userId))));
+    private void findUserById(Long userId) {
+
+        if (!userRepository.existsById(userId)) {
+            throw new NotFoundException(String.format("User with id %s not found", userId));
+        }
+
     }
 
-    private EventFullDto findEventByid(Long eventId) {
-        return eventMapper.toFullDto(eventRepository.findById(eventId)
-                .orElseThrow(() -> new NotFoundException(String.format("Event with id %s not found", eventId))));
+    private void findEventById(Long eventId) {
+
+        if (eventRepository.existsById(eventId)) {
+            throw new NotFoundException(String.format("Event with id %s not found", eventId));
+        }
+
     }
 
     private CommentDto findCommentById(Long commentId) {
+
         return commentMapper.toDto(commentRepository.findById(commentId)
                 .orElseThrow(() -> new NotFoundException(String.format("Comment with id %s not found", commentId))));
     }
 
     private void checkIsAuthor(Long userId, Long commentAuthorId) {
+
         if (!Objects.equals(userId, commentAuthorId)) {
             throw new ConflictException(String.format("User with id %s is not author for comment", userId));
         }
+
     }
 
 }
