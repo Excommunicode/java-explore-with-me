@@ -82,7 +82,7 @@ class RatingPrivateControllerTest {
     @Test
     @SneakyThrows
     void deleteRatingDto() {
-        mockMvc.perform(MockMvcRequestBuilders.delete("/users/{userId}/rating/{ratingId}", 1L , 1L))
+        mockMvc.perform(MockMvcRequestBuilders.delete("/users/{userId}/rating/{ratingId}", 1L, 1L))
                 .andExpect(MockMvcResultMatchers.status().isNoContent());
     }
 }
