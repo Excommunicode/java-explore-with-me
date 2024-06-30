@@ -206,7 +206,8 @@ public class EventServiceImpl implements EventPrivateService, EventPublicService
                     .ip(httpServletRequest.getRemoteAddr())
                     .timestamp(LocalDateTime.now().format(DateTimeFormatter.ofPattern(DATE_TIME_FORMATTER)))
                     .build());
-        }        return eventFullDtoList.isEmpty() ? dtoList : eventFullDtoList;
+        }
+        return eventFullDtoList.isEmpty() ? dtoList : eventFullDtoList;
     }
 
 
