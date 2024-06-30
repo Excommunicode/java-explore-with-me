@@ -30,13 +30,20 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static ru.practicum.enums.ParticipationRequestStatus.*;
+import static ru.practicum.enums.ParticipationRequestStatus.CANCELED;
+import static ru.practicum.enums.ParticipationRequestStatus.CONFIRMED;
+import static ru.practicum.enums.ParticipationRequestStatus.PENDING;
+import static ru.practicum.enums.ParticipationRequestStatus.REJECTED;
 
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
+@Transactional(
+        readOnly = true,
+        isolation = Isolation.REPEATABLE_READ,
+        propagation = Propagation.REQUIRED
+)
 public class ParticipationServiceImpl implements ParticipationPrivateService {
     private final ParticipationRepository participationRepository;
     private final ParticipationMapper participationMapper;
@@ -48,7 +55,7 @@ public class ParticipationServiceImpl implements ParticipationPrivateService {
     @Transactional
     @Override
     public ParticipationRequestDto addRequest(Long userId, Long eventId) {
-        log.info("Adding participation request for user {} and event {}", userId, eventId);
+        log.debug("Adding participation request for user {} and event {}", userId, eventId);
 
         EventFullDto eventFullDto = findEventById(eventId);
 
@@ -62,18 +69,20 @@ public class ParticipationServiceImpl implements ParticipationPrivateService {
 
         ParticipationRequestDto result = participationMapper.toDto(
                 participationRepository.save(participationMapper.toModel(userId, eventId, localDateTime, state)));
+
         log.info("Participation request added: {}", result);
         return result;
     }
 
-
     @Transactional
     @Override
     public EventRequestStatusUpdateResult changeStateRequests(Long userId, Long eventId, EventRequestStatusUpdateRequest newRequestsEvent) {
-        log.info("Changing state of participation requests for user {} on event {}", userId, eventId);
+        log.debug("Changing state of participation requests for user {} on event {}", userId, eventId);
 
         List<ParticipationRequest> eventRegistrations = participationRepository.findAllByIdIn(newRequestsEvent.getRequestIds());
         EventFullDto eventFullDto = findEventById(eventId);
+
+        checkUserIsInitiator(userId, eventId, eventFullDto);
         validParticipation(newRequestsEvent, eventFullDto, eventRegistrations);
 
         participationRepository.updateByIdIn(newRequestsEvent.getRequestIds(), newRequestsEvent.getStatus().toString());
@@ -106,18 +115,21 @@ public class ParticipationServiceImpl implements ParticipationPrivateService {
     @Transactional
     @Override
     public ParticipationRequestDto cancelingYourRequest(Long userId, Long requestId) {
-        log.info("Canceling request {} for user {}", requestId, userId);
+        log.debug("Canceling request {} for user {}", requestId, userId);
+
         ParticipationRequestDto request = participationMapper.toDto(participationRepository.findById(requestId)
                 .orElseThrow(() -> new NotFoundException("Request not found")));
+
         request.setStatus(CANCELED);
         participationRepository.updateByIdStatus(request.getId(), request.getStatus().toString());
+
         log.info("Request {} canceled", requestId);
         return request;
     }
 
     @Override
     public List<ParticipationRequestDto> findInformationAboutUserRegistration(Long userId) {
-        log.info("Retrieving registration information for user {}", userId);
+        log.debug("Retrieving registration information for user {}", userId);
         List<ParticipationRequestDto> result = participationMapper.toListDto(participationRepository.findAllByRequester_Id(userId));
         log.debug("Found {} registrations for user {}", result.size(), userId);
         return result;
@@ -125,10 +137,10 @@ public class ParticipationServiceImpl implements ParticipationPrivateService {
 
     @Override
     public List<ParticipationRequestDto> findRequestRegistration(Long userId, Long eventId) {
-        log.info("Searching for request registrations for user {} and event {}", userId, eventId);
+        log.debug("Searching for request registrations for user {} and event {}", userId, eventId);
         List<ParticipationRequestDto> listDto = participationMapper.toListDto(participationRepository.findAllByEventInitiatorIdAndEventId(userId, eventId));
         if (listDto.isEmpty()) {
-            log.info("No registrations found for user {} and event {}", userId, eventId);
+            log.warn("No registrations found for user {} and event {}", userId, eventId);
             return Collections.emptyList();
         }
         log.debug("Registrations found for user {} and event {}: {}", userId, eventId, listDto.size());
@@ -160,7 +172,7 @@ public class ParticipationServiceImpl implements ParticipationPrivateService {
 
     private void checkParticipationLimit(EventFullDto eventFullDto) {
         if (eventFullDto.getConfirmedRequests() >= eventFullDto.getParticipantLimit() && eventFullDto.getParticipantLimit() != 0) {
-            throw new ConflictException("Фpplication limit has been exhausted");
+            throw new ConflictException("Application limit has been exhausted");
         }
     }
 
@@ -179,6 +191,12 @@ public class ParticipationServiceImpl implements ParticipationPrivateService {
     private void checkRepeatedRequest(Long userId, Long eventId) {
         if (participationRepository.existsByRequester_IdAndEvent_id(userId, eventId)) {
             throw new ConflictException("You cannot send a repeat request");
+        }
+    }
+
+    private static void checkUserIsInitiator(Long userId, Long eventId, EventFullDto eventFullDto) {
+        if (!Objects.equals(eventFullDto.getInitiator().getId(), userId)) {
+            throw new ConflictException(String.format("User with id %s is not initiator for event with id %s", userId, eventId));
         }
     }
 

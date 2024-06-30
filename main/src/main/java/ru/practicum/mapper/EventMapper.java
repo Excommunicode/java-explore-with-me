@@ -4,17 +4,23 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
 import org.mapstruct.NullValuePropertyMappingStrategy;
-import ru.practicum.dto.event.*;
+import ru.practicum.dto.event.EventFullDto;
+import ru.practicum.dto.event.EventShortDto;
+import ru.practicum.dto.event.NewEventDto;
+import ru.practicum.dto.event.UpdateEventUserRequest;
+import ru.practicum.dto.event.UpdateEventUserRequestOutput;
+import ru.practicum.enums.State;
 import ru.practicum.enums.StateAction;
 import ru.practicum.model.Event;
-import ru.practicum.enums.State;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
 import static ru.practicum.constant.EventConstant.DATE_TIME_FORMATTER;
-import static ru.practicum.enums.StateAction.*;
+import static ru.practicum.enums.StateAction.CANCEL_REVIEW;
+import static ru.practicum.enums.StateAction.PUBLISH_EVENT;
+import static ru.practicum.enums.StateAction.SEND_TO_REVIEW;
 
 @Mapper(componentModel = "spring",
         nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
@@ -61,7 +67,6 @@ public interface EventMapper {
                 return toUpdateDto(event, null);
         }
     }
-
 
     @Mapping(target = "eventDate", source = "eventDate", dateFormat = DATE_TIME_FORMATTER)
     UpdateEventUserRequestOutput toUpdateDtoOutput(Event event);

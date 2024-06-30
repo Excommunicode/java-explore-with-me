@@ -50,7 +50,6 @@ public interface StatisticRepository extends JpaRepository<Statistic, Long> {
                                                                                  List<String> uri);
 
 
-
     /**
      * Finds all StatisticProjection objects by timestamp range and a list of URIs.
      *
@@ -60,6 +59,6 @@ public interface StatisticRepository extends JpaRepository<Statistic, Long> {
      * @return a List of StatisticProjection objects that match the criteria
      */
     List<StatisticProjection> findAllStatisticProjectionByTimestampBetweenAndUriIn(LocalDateTime start,
-                                                                                  LocalDateTime end,
-                                                                                  List<String> uri);
+                                                                                   LocalDateTime end,
+                                                                                   List<String> uri);
 }

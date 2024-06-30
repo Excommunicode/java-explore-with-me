@@ -52,8 +52,10 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public void deleteCategory(Long id) {
         log.debug("Deleting category with ID: {}", id);
+
         existCategoryInEvent(id);
         categoryRepository.deleteById(id);
+
         log.info("Category deleted with ID: {}", id);
     }
 
@@ -61,6 +63,7 @@ public class CategoryServiceImpl implements CategoryService {
     public List<CategoryDto> getCategories(int from, int size) {
         log.debug("Fetching categories from: {}, size: {}", from, size);
         Pageable pageable = PageRequest.of(from > 0 ? from / size : 0, size);
+
         List<CategoryDto> categories = categoryMapper.toDtoList(categoryRepository.findAll(pageable).getContent());
         log.info("Fetched categories: {}", categories);
         return categories;
@@ -79,9 +82,7 @@ public class CategoryServiceImpl implements CategoryService {
             checkName(categoryDto.getName());
             dto.setName(categoryDto.getName());
         } else {
-            if (categoryDto.getName() != null) {
-                dto.setName(categoryDto.getName());
-            }
+            dto.setName(categoryDto.getName());
         }
     }
 
@@ -95,7 +96,7 @@ public class CategoryServiceImpl implements CategoryService {
         return categoryMapper.toDto(categoryRepository.findById(id)
                 .orElseThrow(() -> {
                     log.error("Category not found with ID: {}", id);
-                    return new NotFoundException("Not found category");
+                    return new NotFoundException(String.format("Not found category with id: %s", id));
                 }));
     }
 

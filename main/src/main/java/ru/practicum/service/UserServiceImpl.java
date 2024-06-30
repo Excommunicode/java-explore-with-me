@@ -19,7 +19,11 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
+@Transactional(
+        readOnly = true,
+        isolation = Isolation.REPEATABLE_READ,
+        propagation = Propagation.REQUIRED
+)
 public class UserServiceImpl implements UserAdminService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;

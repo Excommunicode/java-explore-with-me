@@ -5,6 +5,8 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.dto.compilation.CompilationDto;
 import ru.practicum.service.impl.CompilationPublicService;
 
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 import static ru.practicum.constant.UserConstant.INITIAL_X;
@@ -18,8 +20,8 @@ public class CompilationPublicController {
 
     @GetMapping
     public List<CompilationDto> findByPinned(@RequestParam(required = false) Boolean pinned,
-                                             @RequestParam(defaultValue = INITIAL_X) int from,
-                                             @RequestParam(defaultValue = LIMIT) int size) {
+                                             @PositiveOrZero @RequestParam(defaultValue = INITIAL_X) int from,
+                                             @Positive @RequestParam(defaultValue = LIMIT) int size) {
         return compilationPublicService.findByPinned(pinned, from, size);
     }
 

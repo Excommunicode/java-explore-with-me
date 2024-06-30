@@ -5,6 +5,7 @@ import ru.practicum.dto.event.NewEventDto;
 import ru.practicum.dto.event.UpdateEventUserRequest;
 import ru.practicum.dto.event.UpdateEventUserRequestOutput;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 public interface EventPrivateService {
@@ -34,7 +35,7 @@ public interface EventPrivateService {
      * @param eventId the ID of the event to be verified
      * @return the EventFullDto containing the event details for verification
      */
-    EventFullDto getEventForVerificationUser(Long userId, Long eventId);
+    EventFullDto getEventForVerificationUser(Long userId, Long eventId, HttpServletRequest httpServletRequest);
 
     /**
      * Updates an event by a user with new details provided in the request.
