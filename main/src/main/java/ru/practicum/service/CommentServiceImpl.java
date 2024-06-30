@@ -133,7 +133,7 @@ public class CommentServiceImpl implements CommentPrivateService, CommentPublicS
 
     private void findEventById(Long eventId) {
 
-        if (eventRepository.existsById(eventId)) {
+        if (!eventRepository.existsById(eventId)) {
             throw new NotFoundException(String.format("Event with id %s not found", eventId));
         }
 
