@@ -120,8 +120,7 @@ public class ParticipationServiceImpl implements ParticipationPrivateService {
         ParticipationRequestDto request = participationMapper.toDto(participationRepository.findById(requestId)
                 .orElseThrow(() -> new NotFoundException("Request not found")));
 
-
-        request.toBuilder().status(CANCELED);
+        request.setStatus(CANCELED);
         participationRepository.updateByIdStatus(request.getId(), request.getStatus().toString());
 
         log.info("Request {} canceled", requestId);
