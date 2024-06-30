@@ -48,6 +48,9 @@ public interface EventRepository extends JpaRepository<Event, Long> {
      */
     boolean existsByCategory_Id(Long id);
 
+    boolean existsByIdAndInitiator(Long userId, Long eventId);
+
+
     /**
      * Finds all events that match a list of states within a specified date range, ordered by their IDs in descending order, with pagination.
      *

@@ -21,6 +21,7 @@ import ru.practicum.dto.registration.ParticipationRequestDto;
 import ru.practicum.service.impl.EventPrivateService;
 import ru.practicum.service.impl.ParticipationPrivateService;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
@@ -50,9 +51,8 @@ public class EventPrivateController {
     }
 
     @GetMapping("/{eventId}")
-    public EventFullDto getEventForVerification(@PathVariable Long userId, @PathVariable Long eventId) {
-
-        return eventPrivateService.getEventForVerificationUser(userId, eventId);
+    public EventFullDto getEventForVerification(@PathVariable Long userId, @PathVariable Long eventId, HttpServletRequest httpServletRequest) {
+        return eventPrivateService.getEventForVerificationUser(userId, eventId, httpServletRequest); // TODO
     }
 
     @PatchMapping("/{eventId}")

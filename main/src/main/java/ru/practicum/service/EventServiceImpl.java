@@ -167,12 +167,11 @@ public class EventServiceImpl implements EventPrivateService, EventPublicService
     }
 
     @Override
-    public EventFullDto getEventForVerificationUser(Long userId, Long eventId) {
+    public EventFullDto getEventForVerificationUser(Long userId, Long eventId, HttpServletRequest httpServletRequest) {
         log.debug("Verifying event with ID: {} for user ID: {}", eventId, userId);
 
-        if (!userRepository.existsById(userId)) {
-            log.warn("User verification failed for user ID: {}", userId);
-            throw new BadRequestException("Invalid user ID: " + userId);
+        if (!eventRepository.existsByIdAndInitiator(userId, eventId)) {
+            recordRequestStats(httpServletRequest);
         }
 
         return findEvenFullDtoById(eventId);
@@ -183,30 +182,13 @@ public class EventServiceImpl implements EventPrivateService, EventPublicService
     public List<EventFullDto> getEventsDto(String text, List<Long> categories, boolean paid,
                                            LocalDateTime rangeStart, LocalDateTime rangeEnd, boolean onlyAvailable,
                                            EventSort sort, int from, int size, HttpServletRequest httpServletRequest) {
-        List<EventFullDto> dtoList = new ArrayList<>();
-        Pageable pageable = PageRequest.of(from > 0 ? from / size : 0, size, Sort.by(Sort.Direction.DESC, "id"));
 
-        if (Objects.nonNull(text)) {
-            String textLowerCase = text.toLowerCase();
-            if (Objects.nonNull(rangeStart) || Objects.nonNull(rangeEnd)) {
-                checkStartTime(rangeStart, rangeEnd);
-                dtoList = eventMapper.toDtoList(eventRepository.findAllByDescriptionAndCategoryAndPaidAndPaid(textLowerCase, categories, paid, LocalDateTime.now(), pageable));
-            } else {
-                dtoList = eventMapper.toDtoList(eventRepository.findAllByEventDateAndDescriptionAndPaid(textLowerCase, categories, rangeStart, rangeEnd, paid, pageable));
-            }
-        } else if (!categories.isEmpty()) {
-            dtoList = eventMapper.toDtoList(eventRepository.findAllByCategoryIdInAndPaid(categories, pageable));
-        }
+        Pageable pageable = PageRequest.of(from > 0 ? from / size : 0, size, Sort.by(Sort.Direction.DESC, "id"));
+        List<EventFullDto> dtoList = findEventByParameters(text, categories, paid, rangeStart, rangeEnd, pageable);
 
         List<EventFullDto> eventFullDtoList = setAverageRatings(sort, dtoList, getEventIds(dtoList));
-        if (Objects.nonNull(httpServletRequest)) {
-            statsClient.postStats(EndpointDto.builder()
-                    .app(EVM_SERVICE)
-                    .uri(httpServletRequest.getRequestURI())
-                    .ip(httpServletRequest.getRemoteAddr())
-                    .timestamp(LocalDateTime.now().format(DateTimeFormatter.ofPattern(DATE_TIME_FORMATTER)))
-                    .build());
-        }
+        recordRequestStats(httpServletRequest);
+
         return eventFullDtoList.isEmpty() ? dtoList : eventFullDtoList;
     }
 
@@ -219,12 +201,7 @@ public class EventServiceImpl implements EventPrivateService, EventPublicService
         EventFullDto event = eventMapper.toFullDto(eventRepository.findByIdAndState(id, PUBLISHED)
                 .orElseThrow(() -> new NotFoundException(String.format("Event with id %s not found", id))));
 
-        statsClient.postStats(EndpointDto.builder()
-                .app(EVM_SERVICE)
-                .uri(httpServletRequest.getRequestURI())
-                .ip(httpServletRequest.getRemoteAddr())
-                .timestamp(LocalDateTime.now().format(DateTimeFormatter.ofPattern(DATE_TIME_FORMATTER)))
-                .build());
+        recordRequestStats(httpServletRequest);
 
         String uri = "/events/" + event.getId();
         List<String> uris = List.of(uri);
@@ -311,12 +288,14 @@ public class EventServiceImpl implements EventPrivateService, EventPublicService
     }
 
     private void findUserById(Long userId) {
+
         if (!userRepository.existsById(userId)) {
             throw new NotFoundException(String.format("User with id %s was not found", userId));
         }
     }
 
     private void checkStartTime(LocalDateTime rangeStart, LocalDateTime rangeEnd) {
+
         if (rangeStart.isAfter(rangeEnd)) {
             throw new BadRequestException("Start cannot be later than the end");
         }
@@ -459,5 +438,34 @@ public class EventServiceImpl implements EventPrivateService, EventPublicService
                 event.setState(CANCELED);
                 break;
         }
+    }
+
+    private void recordRequestStats(HttpServletRequest httpServletRequest) {
+        if (Objects.nonNull(httpServletRequest)) {
+            statsClient.postStats(EndpointDto.builder()
+                    .app(EVM_SERVICE)
+                    .uri(httpServletRequest.getRequestURI())
+                    .ip(httpServletRequest.getRemoteAddr())
+                    .timestamp(LocalDateTime.now().format(DateTimeFormatter.ofPattern(DATE_TIME_FORMATTER)))
+                    .build());
+        }
+    }
+
+    private List<EventFullDto> findEventByParameters(String text, List<Long> categories, boolean paid, LocalDateTime rangeStart, LocalDateTime rangeEnd, Pageable pageable) {
+        List<EventFullDto> dtoList = new ArrayList<>();
+        if (Objects.nonNull(text)) {
+            String textLowerCase = text.toLowerCase();
+            if (Objects.nonNull(rangeStart) || Objects.nonNull(rangeEnd)) {
+                checkStartTime(rangeStart, rangeEnd);
+                dtoList = eventMapper.toDtoList(eventRepository.findAllByDescriptionAndCategoryAndPaidAndPaid(textLowerCase, categories, paid, LocalDateTime.now(), pageable));
+            } else {
+                dtoList = eventMapper.toDtoList(eventRepository.findAllByEventDateAndDescriptionAndPaid(textLowerCase, categories, rangeStart, rangeEnd, paid, pageable));
+            }
+        } else if (categories != null) {
+            if (!categories.isEmpty()) {
+                dtoList = eventMapper.toDtoList(eventRepository.findAllByCategoryIdInAndPaid(categories, pageable));
+            }
+        }
+        return dtoList;
     }
 }
