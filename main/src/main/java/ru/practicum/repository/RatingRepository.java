@@ -10,8 +10,7 @@ import java.util.List;
 public interface RatingRepository extends JpaRepository<Rating, Long> {
 
     @Modifying
-    @Query(nativeQuery = true,
-            value = "UPDATE ratings set assessment = :assessment WHERE id = :ratingId")
+    @Query("UPDATE Rating e SET e.assessment = :assessment WHERE e.id = :ratingId")
     int updateRatingByIdAndAssessment(Long ratingId, int assessment);
 
     List<Rating> findAllByEventIdAndAssessmentNotNull(Long eventId);

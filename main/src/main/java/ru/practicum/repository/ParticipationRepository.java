@@ -61,8 +61,8 @@ public interface ParticipationRepository extends JpaRepository<ParticipationRequ
      * @param status the new status to set for the participation request.
      */
     @Modifying
-    @Query(nativeQuery = true, value = "UPDATE participation_requests SET status = :status WHERE id = :id")
-    void updateByIdStatus(Long id, String status);
+    @Query("UPDATE ParticipationRequest p SET p.status = :status WHERE p.id = :id")
+    void updateByIdStatus(Long id, ParticipationRequestStatus status);
 
     /**
      * Updates the status for multiple participation requests by their IDs.
@@ -71,6 +71,6 @@ public interface ParticipationRepository extends JpaRepository<ParticipationRequ
      * @param status           the new status to apply to the participation requests.
      */
     @Modifying
-    @Query(nativeQuery = true, value = "UPDATE participation_requests SET status = :status WHERE id IN :participationIds")
-    void updateByIdIn(@Param("participationIds") List<Long> participationIds, @Param("status") String status);
+    @Query("UPDATE ParticipationRequest p SET p.status = :status WHERE p.id IN :participationIds")
+    void updateStatusByParticipationIds(@Param("participationIds") List<Long> participationIds, @Param("status") ParticipationRequestStatus status);
 }

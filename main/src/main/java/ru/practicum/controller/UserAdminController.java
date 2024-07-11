@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.dto.user.UserDto;
-import ru.practicum.service.impl.UserAdminService;
+import ru.practicum.service.api.UserAdminService;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
@@ -27,10 +27,10 @@ public class UserAdminController {
     }
 
     @GetMapping
-    public List<UserDto> getUsers(@RequestParam(value = "ids", required = false) Long id,
+    public List<UserDto> getUsers(@RequestParam(value = "ids", required = false) List<Long> ids,
                                   @PositiveOrZero @RequestParam(defaultValue = INITIAL_X) int from,
                                   @Positive @RequestParam(defaultValue = LIMIT) int size) {
-        return userService.getUsers(id, from, size);
+        return userService.getUsers(ids, from, size);
     }
 
     @DeleteMapping("/{userId}")

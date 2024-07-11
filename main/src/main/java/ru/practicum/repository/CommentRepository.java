@@ -13,16 +13,16 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
      * Updates the text of a comment and sets its 'updated' flag to true based on the comment's ID.
      *
      * @param commentId the ID of the comment to be updated.
-     * @param text the new text to replace the existing comment text.
+     * @param text      the new text to replace the existing comment text.
      */
     @Modifying
-    @Query(nativeQuery = true, value = "UPDATE comments SET text = :text, updated = true WHERE id = :commentId")
+    @Query("UPDATE Comment c SET c.text = :text, c.updated = true  WHERE c.id = :commentId")
     void updateById_updAndUpdatedAndText(Long commentId, String text);
 
     /**
      * Retrieves all comments associated with a specific event, with pagination.
      *
-     * @param eventId the ID of the event for which comments are being retrieved.
+     * @param eventId  the ID of the event for which comments are being retrieved.
      * @param pageable the pagination information (page number, page size, sorting directions).
      * @return a pageable list of {@link Comment} objects associated with the event.
      */

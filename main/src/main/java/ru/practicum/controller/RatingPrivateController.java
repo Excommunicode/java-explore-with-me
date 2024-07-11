@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.dto.rating.NewRatingDto;
 import ru.practicum.dto.rating.RatingDto;
-import ru.practicum.service.impl.RatingPrivateService;
+import ru.practicum.service.api.RatingPrivateService;
 
 import javax.validation.Valid;
 

@@ -6,7 +6,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.dto.compilation.CompilationDto;
 import ru.practicum.dto.compilation.UpdateCompilationRequest;
-import ru.practicum.service.impl.CompilationAdminService;
+import ru.practicum.service.api.CompilationAdminService;
 
 import static ru.practicum.util.Marker.OnCreate;
 import static ru.practicum.util.Marker.OnUpdate;

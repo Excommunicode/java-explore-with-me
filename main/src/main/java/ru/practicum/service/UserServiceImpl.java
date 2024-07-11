@@ -12,18 +12,14 @@ import ru.practicum.dto.user.UserDto;
 import ru.practicum.exceptiion.ConflictException;
 import ru.practicum.mapper.UserMapper;
 import ru.practicum.repository.UserRepository;
-import ru.practicum.service.impl.UserAdminService;
+import ru.practicum.service.api.UserAdminService;
 
 import java.util.List;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional(
-        readOnly = true,
-        isolation = Isolation.REPEATABLE_READ,
-        propagation = Propagation.REQUIRED
-)
+@Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
 public class UserServiceImpl implements UserAdminService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
@@ -32,8 +28,10 @@ public class UserServiceImpl implements UserAdminService {
     @Override
     public UserDto addUserDto(UserDto userDto) {
         log.debug("Adding a user with email: {}", userDto.getEmail());
+
         checkExistsEmail(userDto.getEmail());
         UserDto savedUserDto = userMapper.toDto(userRepository.save(userMapper.toModel(userDto)));
+
         log.info("User added with ID: {}", savedUserDto.getId());
         return savedUserDto;
     }
@@ -45,10 +43,17 @@ public class UserServiceImpl implements UserAdminService {
     }
 
     @Override
-    public List<UserDto> getUsers(Long id, int from, int size) {
+    public List<UserDto> getUsers(List<Long> ids, int from, int size) {
         Pageable pageable = PageRequest.of(from > 0 ? from / size : 0, size);
-        return id != null ? userMapper.toDtoList(userRepository.findAllById(id, pageable)) :
-                userMapper.toDtoList(userRepository.findAll(pageable).getContent());
+        return ids != null ? findAllUsersDtoById(ids, pageable) : findAllUsersDto(pageable);
+    }
+
+    private List<UserDto> findAllUsersDtoById(List<Long> ids, Pageable pageable) {
+        return userMapper.toDtoList(userRepository.findAllByIdIn(ids, pageable));
+    }
+
+    private List<UserDto> findAllUsersDto(Pageable pageable) {
+        return userMapper.toDtoList(userRepository.findAll(pageable).getContent());
     }
 
     private void checkExistsEmail(String email) {

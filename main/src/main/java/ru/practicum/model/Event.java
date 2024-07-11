@@ -12,6 +12,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -37,7 +38,7 @@ public class Event {
     @Column(nullable = false)
     private String annotation;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "category_id")
     private Category category;
 
@@ -53,11 +54,11 @@ public class Event {
     @Column(name = "event_date", nullable = false)
     private LocalDateTime eventDate;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "initiator_id", nullable = false)
     private User initiator;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "location_id")
     private Location location;
 

@@ -18,8 +18,8 @@ import ru.practicum.dto.event.UpdateEventUserRequestOutput;
 import ru.practicum.dto.registration.EventRequestStatusUpdateRequest;
 import ru.practicum.dto.registration.EventRequestStatusUpdateResult;
 import ru.practicum.dto.registration.ParticipationRequestDto;
-import ru.practicum.service.impl.EventPrivateService;
-import ru.practicum.service.impl.ParticipationPrivateService;
+import ru.practicum.service.api.EventPrivateService;
+import ru.practicum.service.api.ParticipationPrivateService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
@@ -58,6 +58,7 @@ public class EventPrivateController {
     @PatchMapping("/{eventId}")
     public UpdateEventUserRequestOutput updateEvent(@PathVariable Long userId, @PathVariable Long eventId,
                                                     @Valid @RequestBody UpdateEventUserRequest updateEventUserReport) {
+//        System.err.println(updateEventUserReport);
         return eventPrivateService.updateEvent(userId, eventId, updateEventUserReport);
     }
 

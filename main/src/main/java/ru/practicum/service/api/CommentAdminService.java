@@ -1,4 +1,4 @@
-package ru.practicum.service.impl;
+package ru.practicum.service.api;
 
 public interface CommentAdminService {
     void deleteCommentByAdmin(Long commentId);
