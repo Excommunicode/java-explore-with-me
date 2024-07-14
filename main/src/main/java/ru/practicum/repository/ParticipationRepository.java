@@ -18,6 +18,11 @@ public interface ParticipationRepository extends JpaRepository<ParticipationRequ
      * @param eventId the ID of the event for which participation requests are being searched.
      * @return a list of {@link ParticipationRequest} that meet the criteria.
      */
+    @Query("SELECT p " +
+            "FROM ParticipationRequest p " +
+            "JOIN FETCH p.event e " +
+            "WHERE e.initiator.id = :userId " +
+            "AND e.id = :eventId")
     List<ParticipationRequest> findAllByEventInitiatorIdAndEventId(Long userId, Long eventId);
 
     /**
@@ -26,6 +31,10 @@ public interface ParticipationRepository extends JpaRepository<ParticipationRequ
      * @param userId the ID of the requester whose participation requests are to be retrieved.
      * @return a list of {@link ParticipationRequest} associated with the given requester ID.
      */
+    @Query("SELECT p " +
+            "FROM ParticipationRequest p " +
+            "JOIN FETCH p.requester u " +
+            "WHERE u.id = :userId")
     List<ParticipationRequest> findAllByRequester_Id(Long userId);
 
     /**
@@ -35,6 +44,10 @@ public interface ParticipationRepository extends JpaRepository<ParticipationRequ
      * @param eventId the ID of the event.
      * @return true if such a request exists, false otherwise.
      */
+    @Query("SELECT CASE WHEN COUNT(p) > 0 THEN TRUE ELSE FALSE END " +
+            "FROM ParticipationRequest p " +
+            "WHERE p.requester.id = :userId " +
+            "AND p.event.id = :eventId")
     boolean existsByRequester_IdAndEvent_id(Long userId, Long eventId);
 
     /**
@@ -43,6 +56,9 @@ public interface ParticipationRepository extends JpaRepository<ParticipationRequ
      * @param requestIds a list of IDs for the participation requests to retrieve.
      * @return a list of {@link ParticipationRequest} with IDs from the provided list.
      */
+    @Query("SELECT p " +
+            "FROM ParticipationRequest p " +
+            "WHERE p.id IN :requestIds")
     List<ParticipationRequest> findAllByIdIn(List<Long> requestIds);
 
     /**
@@ -52,7 +68,12 @@ public interface ParticipationRepository extends JpaRepository<ParticipationRequ
      * @param status   the status of the participation requests to filter by.
      * @return a list of {@link ParticipationRequest} that meet the search criteria.
      */
-    List<ParticipationRequest> findAllByEventIdInAndStatus(List<Long> eventIds, ParticipationRequestStatus status);
+    @Query("SELECT p " +
+            "FROM ParticipationRequest p " +
+            "JOIN FETCH p.event e " +
+            "WHERE e.id IN :eventIds " +
+            "AND p.status = :status")
+    List<ParticipationRequest> findAllByEventIdInAndStatus(@Param("eventIds") List<Long> eventIds, @Param("status") ParticipationRequestStatus status);
 
     /**
      * Updates the status of a participation request by its ID.

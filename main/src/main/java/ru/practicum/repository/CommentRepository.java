@@ -26,6 +26,10 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
      * @param pageable the pagination information (page number, page size, sorting directions).
      * @return a pageable list of {@link Comment} objects associated with the event.
      */
+    @Query("SELECT c " +
+            "FROM Comment c " +
+            "JOIN FETCH Event e " +
+            "WHERE e.id = :eventId")
     List<Comment> findAllByEvent_Id(Long eventId, Pageable pageable);
 
     /**

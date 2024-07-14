@@ -45,8 +45,7 @@ public interface EventMapper {
             @Mapping(target = "id", ignore = true),
             @Mapping(target = "category.id", source = "newEventDto.category"),
             @Mapping(target = "eventDate", source = "newEventDto.eventDate", dateFormat = DATE_TIME_FORMATTER),
-            @Mapping(target = "initiator.id", source = "userId"),
-            @Mapping(target = "state", source = "state")
+            @Mapping(target = "initiator.id", source = "userId")
     })
     Event toEvent(NewEventDto newEventDto, Long userId, State state, LocalDateTime createdOn);
 

@@ -103,7 +103,8 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     private void checkName(String name) {
-        if (categoryRepository.existsByName(name)) {
+        String nameLowerCase = name.toLowerCase();
+        if (categoryRepository.existsByName(nameLowerCase)) {
             throw new ConflictException(String.format("This name :%s has already taken", name));
         }
     }

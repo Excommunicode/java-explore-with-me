@@ -15,6 +15,7 @@ import ru.practicum.enums.CommentSort;
 import ru.practicum.exceptiion.ConflictException;
 import ru.practicum.exceptiion.NotFoundException;
 import ru.practicum.mapper.CommentMapper;
+import ru.practicum.model.Comment;
 import ru.practicum.repository.CommentRepository;
 import ru.practicum.repository.EventRepository;
 import ru.practicum.repository.UserRepository;
@@ -58,15 +59,19 @@ public class CommentServiceImpl implements CommentPrivateService, CommentPublicS
         log.debug("Updating comment for userId: {} and commentId: {}", userId, commentId);
         existsUserById(userId);
 
-        CommentDto commentDto = findCommentById(commentId);
-        checkIsAuthor(userId, commentDto.getAuthor());
-        commentRepository.updateById_updAndUpdatedAndText(commentId, newCommentDto.getText());
+//        CommentDto commentDto = findCommentById(commentId);
+        Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new NotFoundException("Not found"));
+        checkIsAuthor(userId, comment.getAuthor().getId());
 
-        entityManager.clear();
+        return commentMapper.toDto(commentMapper.updateComment(comment, newCommentDto));
 
-        CommentDto updatedComment = findCommentById(commentId);
-        log.info("Comment updated successfully for userId: {} and commentId: {}", userId, commentId);
-        return updatedComment;
+//        commentRepository.updateById_updAndUpdatedAndText(commentId, newCommentDto.getText());
+//
+//        entityManager.clear();
+//
+//        CommentDto updatedComment = findCommentById(commentId);
+//        log.info("Comment updated successfully for userId: {} and commentId: {}", userId, commentId);
+//        return updatedComment;
     }
 
     @Transactional

@@ -99,10 +99,7 @@ public class ParticipationServiceImpl implements ParticipationPrivateService {
         confirmedRequests.sort(Comparator.comparing(ParticipationRequestDto::getId).reversed());
         rejectedRequests.sort(Comparator.comparing(ParticipationRequestDto::getId).reversed());
 
-        EventRequestStatusUpdateResult result = EventRequestStatusUpdateResult.builder()
-                .confirmedRequests(confirmedRequests)
-                .rejectedRequests(rejectedRequests)
-                .build();
+        EventRequestStatusUpdateResult result = participationMapper.toUpdateResult(confirmedRequests, rejectedRequests);
 
         log.info("Request status updated. Confirmed: {}, Rejected: {}", confirmedRequests.size(), rejectedRequests.size());
         return result;

@@ -124,10 +124,6 @@ public class EventAdminServiceImpl implements  EventAdminService {
         return eventFullDtoList;
     }
 
-
-
-
-
     private void checkEventDateUpdate(String time) {
         if (Objects.nonNull(time)) {
             LocalDateTime dateTime = LocalDateTime.parse(time, DateTimeFormatter.ofPattern(DATE_TIME_FORMATTER));
@@ -136,7 +132,6 @@ public class EventAdminServiceImpl implements  EventAdminService {
             }
         }
     }
-
 
     private void checkEventAlreadyPublished(EventFullDto eventFullDto, UpdateEventAdminRequest updateEventUserRequest) {
         if (updateEventUserRequest.getStateAction() == PUBLISH_EVENT) {

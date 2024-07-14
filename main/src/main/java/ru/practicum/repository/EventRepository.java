@@ -20,6 +20,10 @@ public interface EventRepository extends JpaRepository<Event, Long>, QuerydslPre
      * @param pageable the pagination information (page number, page size, sorting directions).
      * @return a pageable list of {@link Event} objects initiated by the specified user.
      */
+    @Query("SELECT e " +
+            "FROM Event e " +
+            "JOIN FETCH e.initiator i " +
+            "WHERE i.id = :userId")
     List<Event> findAllByInitiator_Id(Long userId, Pageable pageable);
 
     /**
@@ -29,6 +33,10 @@ public interface EventRepository extends JpaRepository<Event, Long>, QuerydslPre
      * @param state the state of the event.
      * @return an {@link Optional} of {@link Event} if found, or an empty Optional if no event matches the criteria.
      */
+    @Query("SELECT e " +
+            "FROM Event e " +
+            "WHERE e.id = :id " +
+            "AND e.state = :state")
     Optional<Event> findByIdAndState(Long id, State state);
 
     /**
@@ -37,6 +45,9 @@ public interface EventRepository extends JpaRepository<Event, Long>, QuerydslPre
      * @param id the category ID to check.
      * @return true if any events with the specified category ID exist, otherwise false.
      */
+    @Query("SELECT COUNT(e) > 0 " +
+            "FROM Event e " +
+            "WHERE e.category.id = :id")
     boolean existsByCategory_Id(Long id);
 
     /**
@@ -46,6 +57,11 @@ public interface EventRepository extends JpaRepository<Event, Long>, QuerydslPre
      * @param eventId the ID to check.D
      * @return true if any events with the specified category ID exist, otherwise false.
      */
+    @Query("SELECT COUNT(e) > 0 " +
+            "FROM Event e " +
+            "JOIN e.initiator u " +
+            "WHERE e.id = :eventId " +
+            "AND u.id = :userId")
     boolean existsByIdAndInitiator_Id(Long eventId, Long userId);
 
     /**

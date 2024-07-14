@@ -58,7 +58,6 @@ public class EventPrivateController {
     @PatchMapping("/{eventId}")
     public UpdateEventUserRequestOutput updateEvent(@PathVariable Long userId, @PathVariable Long eventId,
                                                     @Valid @RequestBody UpdateEventUserRequest updateEventUserReport) {
-//        System.err.println(updateEventUserReport);
         return eventPrivateService.updateEvent(userId, eventId, updateEventUserReport);
     }
 

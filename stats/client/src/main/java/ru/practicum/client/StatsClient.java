@@ -34,7 +34,6 @@ public class StatsClient {
 
     public List<ViewStatsDto> getStats(String start, String end, List<String> uris, boolean unique) {
 
-        System.err.println("Stats client " + uris + " это урисы");
         String url = String.format("/stats?start=%s&end=%s&uris=%s&unique=%s", start, end, uris, unique);
 
         ResponseEntity<ViewStatsDto[]> response = restTemplate.getForEntity(url, ViewStatsDto[].class);
