@@ -15,7 +15,6 @@ import ru.practicum.enums.CommentSort;
 import ru.practicum.exceptiion.ConflictException;
 import ru.practicum.exceptiion.NotFoundException;
 import ru.practicum.mapper.CommentMapper;
-import ru.practicum.model.Comment;
 import ru.practicum.repository.CommentRepository;
 import ru.practicum.repository.EventRepository;
 import ru.practicum.repository.UserRepository;
@@ -46,7 +45,7 @@ public class CommentServiceImpl implements CommentPrivateService, CommentPublicS
     public CommentDto addCommentDto(Long userId, Long eventId, NewCommentDto newCommentDto) {
         log.debug("Adding comment for userId: {} and eventId: {}", userId, eventId);
         existsUserById(userId);
-        exestsEventById(eventId);
+        existsEventById(eventId);
         CommentDto commentDto = commentMapper.toDto(commentRepository.save(
                 commentMapper.toModel(userId, eventId, newCommentDto, LocalDateTime.now())));
         log.info("Comment added successfully for userId: {} and eventId: {}", userId, eventId);
@@ -59,19 +58,15 @@ public class CommentServiceImpl implements CommentPrivateService, CommentPublicS
         log.debug("Updating comment for userId: {} and commentId: {}", userId, commentId);
         existsUserById(userId);
 
-//        CommentDto commentDto = findCommentById(commentId);
-        Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new NotFoundException("Not found"));
-        checkIsAuthor(userId, comment.getAuthor().getId());
+        CommentDto commentDto = findCommentById(commentId);
+        checkIsAuthor(userId, commentDto.getAuthor());
+        commentRepository.updateById_updAndUpdatedAndText(commentId, newCommentDto.getText());
 
-        return commentMapper.toDto(commentMapper.updateComment(comment, newCommentDto));
+        entityManager.clear();
 
-//        commentRepository.updateById_updAndUpdatedAndText(commentId, newCommentDto.getText());
-//
-//        entityManager.clear();
-//
-//        CommentDto updatedComment = findCommentById(commentId);
-//        log.info("Comment updated successfully for userId: {} and commentId: {}", userId, commentId);
-//        return updatedComment;
+        CommentDto updatedComment = findCommentById(commentId);
+        log.info("Comment updated successfully for userId: {} and commentId: {}", userId, commentId);
+        return updatedComment;
     }
 
     @Transactional
@@ -132,7 +127,7 @@ public class CommentServiceImpl implements CommentPrivateService, CommentPublicS
 
     }
 
-    private void exestsEventById(Long eventId) {
+    private void existsEventById(Long eventId) {
 
         if (!eventRepository.existsById(eventId)) {
             throw new NotFoundException(String.format("Event with id %s not found", eventId));

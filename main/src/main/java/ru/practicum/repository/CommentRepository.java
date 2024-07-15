@@ -38,5 +38,8 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
      * @param eventId the ID of the event for which to count the comments.
      * @return the total number of comments associated with the event.
      */
+    @Query("SELECT COUNT(c) " +
+            "FROM Comment c " +
+            "WHERE c.id = :eventId")
     int countByEventId(Long eventId);
 }
