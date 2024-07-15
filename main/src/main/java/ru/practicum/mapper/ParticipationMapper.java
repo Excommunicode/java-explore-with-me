@@ -3,6 +3,7 @@ package ru.practicum.mapper;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
+import ru.practicum.dto.registration.EventRequestStatusUpdateResult;
 import ru.practicum.dto.registration.ParticipationRequestDto;
 import ru.practicum.enums.ParticipationRequestStatus;
 import ru.practicum.model.ParticipationRequest;
@@ -30,4 +31,7 @@ public interface ParticipationMapper {
     ParticipationRequest toModel(Long userId, Long event, LocalDateTime created, ParticipationRequestStatus status);
 
     List<ParticipationRequestDto> toListDto(List<ParticipationRequest> events);
+
+    EventRequestStatusUpdateResult toUpdateResult(List<ParticipationRequestDto> confirmedRequests,
+                                                  List<ParticipationRequestDto> rejectedRequests);
 }

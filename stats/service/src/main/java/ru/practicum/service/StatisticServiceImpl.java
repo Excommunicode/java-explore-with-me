@@ -45,7 +45,7 @@ public class StatisticServiceImpl implements StatisticService {
                 .collect(Collectors.toList());
 
         List<StatisticProjection> allByTimestampBetween;
-        if (uri == null || uri.isEmpty()) {
+        if (uri.isEmpty() || uri == null) {
             allByTimestampBetween = unique ? statisticRepository.findAllByTimestampBetween(start, end)
                     : statisticRepository.findAllStatisticProjectionByTimestampBetween(start, end);
         } else {

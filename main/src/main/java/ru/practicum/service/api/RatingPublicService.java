@@ -1,4 +1,4 @@
-package ru.practicum.service.impl;
+package ru.practicum.service.api;
 
 public interface RatingPublicService {
     double getAvgAssessment(Long eventId);

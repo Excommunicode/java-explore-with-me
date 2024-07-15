@@ -14,7 +14,7 @@ import ru.practicum.exceptiion.NotFoundException;
 import ru.practicum.mapper.CategoryMapper;
 import ru.practicum.repository.CategoryRepository;
 import ru.practicum.repository.EventRepository;
-import ru.practicum.service.impl.CategoryService;
+import ru.practicum.service.api.CategoryService;
 
 import java.util.List;
 
@@ -31,8 +31,10 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public CategoryDto addCategoryDto(CategoryDto categoryDto) {
         log.debug("Adding new category: {}", categoryDto);
+
         checkName(categoryDto.getName());
         CategoryDto result = categoryMapper.toDto(categoryRepository.save(categoryMapper.toModel(categoryDto)));
+
         log.info("Category added with ID: {}", result.getId());
         return result;
     }
@@ -42,7 +44,7 @@ public class CategoryServiceImpl implements CategoryService {
     public CategoryDto updateCategory(Long id, CategoryDto categoryDto) {
         log.debug("Updating category with ID: {}", id);
         CategoryDto dto = getDto(id);
-        checkName(categoryDto, dto);
+        validName(categoryDto, dto);
         CategoryDto updatedDto = categoryMapper.toDto(categoryRepository.save(categoryMapper.toModel(dto)));
         log.info("Category updated with new values: {}", updatedDto);
         return updatedDto;
@@ -77,7 +79,7 @@ public class CategoryServiceImpl implements CategoryService {
         return categoryDto;
     }
 
-    private void checkName(CategoryDto categoryDto, CategoryDto dto) {
+    private void validName(CategoryDto categoryDto, CategoryDto dto) {
         if (!categoryDto.getName().equals(dto.getName())) {
             checkName(categoryDto.getName());
             dto.setName(categoryDto.getName());
@@ -101,7 +103,8 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     private void checkName(String name) {
-        if (categoryRepository.existsByName(name)) {
+        String nameLowerCase = name.toLowerCase();
+        if (categoryRepository.existsByName(nameLowerCase)) {
             throw new ConflictException(String.format("This name :%s has already taken", name));
         }
     }

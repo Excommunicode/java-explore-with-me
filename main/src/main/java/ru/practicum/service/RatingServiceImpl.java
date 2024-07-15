@@ -15,8 +15,8 @@ import ru.practicum.mapper.EventMapper;
 import ru.practicum.mapper.RatingMapper;
 import ru.practicum.repository.EventRepository;
 import ru.practicum.repository.RatingRepository;
-import ru.practicum.service.impl.RatingPrivateService;
-import ru.practicum.service.impl.RatingPublicService;
+import ru.practicum.service.api.RatingPrivateService;
+import ru.practicum.service.api.RatingPublicService;
 
 import java.util.List;
 import java.util.Objects;
@@ -24,11 +24,7 @@ import java.util.Objects;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional(
-        readOnly = true,
-        isolation = Isolation.REPEATABLE_READ,
-        propagation = Propagation.REQUIRED
-)
+@Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
 public class RatingServiceImpl implements RatingPrivateService, RatingPublicService {
     private final RatingRepository ratingRepository;
     private final RatingMapper ratingMapper;
@@ -111,7 +107,7 @@ public class RatingServiceImpl implements RatingPrivateService, RatingPublicServ
     private void checkIsInitiator(Long userId, Long initiatorId) {
         if (Objects.equals(userId, initiatorId)) {
             throw new ConflictException(String.format(
-                    "initiator of the event with %s identifier tried to like himself", initiatorId));
+                    "Initiator of the event with %s identifier tried to like himself", initiatorId));
         }
     }
 }

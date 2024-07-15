@@ -1,7 +1,9 @@
 package ru.practicum.dto.event;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import ru.practicum.dto.user.UserShortDto;
 import ru.practicum.dto.category.CategoryDto;
 import ru.practicum.model.Location;
@@ -10,6 +12,8 @@ import ru.practicum.enums.State;
 import java.time.LocalDateTime;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder(toBuilder = true)
 public class EventFullDto {
     private Long id;

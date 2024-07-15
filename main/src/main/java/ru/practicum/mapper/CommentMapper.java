@@ -2,6 +2,7 @@ package ru.practicum.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 import org.mapstruct.Mappings;
 import ru.practicum.dto.comment.CommentDto;
 import ru.practicum.dto.comment.NewCommentDto;
@@ -29,4 +30,6 @@ public interface CommentMapper {
     CommentDto toDto(Comment comment);
 
     List<CommentDto> toListDto(List<Comment> comments);
+
+    Comment updateComment(@MappingTarget Comment comment, NewCommentDto newCommentDto);
 }

@@ -8,7 +8,15 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import ru.practicum.controller.*;
+import ru.practicum.controller.CategoryAdminController;
+import ru.practicum.controller.CategoryPublicController;
+import ru.practicum.controller.CompilationAdminController;
+import ru.practicum.controller.CompilationPublicController;
+import ru.practicum.controller.EventAdminController;
+import ru.practicum.controller.EventPrivateController;
+import ru.practicum.controller.EventPublicController;
+import ru.practicum.controller.ParticipationPrivateController;
+import ru.practicum.controller.UserAdminController;
 
 import java.util.ArrayList;
 import java.util.List;

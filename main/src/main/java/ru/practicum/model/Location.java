@@ -1,6 +1,7 @@
 package ru.practicum.model;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -20,6 +21,7 @@ import javax.persistence.Table;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "locations")
+@Builder(toBuilder = true)
 public class Location {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

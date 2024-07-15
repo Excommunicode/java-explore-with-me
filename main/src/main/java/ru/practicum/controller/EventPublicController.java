@@ -12,9 +12,9 @@ import ru.practicum.dto.comment.CommentDto;
 import ru.practicum.dto.event.EventFullDto;
 import ru.practicum.enums.CommentSort;
 import ru.practicum.enums.EventSort;
-import ru.practicum.service.impl.CommentPublicService;
-import ru.practicum.service.impl.EventPublicService;
-import ru.practicum.service.impl.RatingPublicService;
+import ru.practicum.service.api.CommentPublicService;
+import ru.practicum.service.api.EventPublicService;
+import ru.practicum.service.api.RatingPublicService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.constraints.Positive;

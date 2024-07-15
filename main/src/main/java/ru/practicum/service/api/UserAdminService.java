@@ -1,4 +1,4 @@
-package ru.practicum.service.impl;
+package ru.practicum.service.api;
 
 import ru.practicum.dto.user.UserDto;
 
@@ -21,7 +21,7 @@ public interface UserAdminService {
      * @param size the maximum number of users to retrieve
      * @return a list of UserDto representing the users fetched from the system
      */
-    List<UserDto> getUsers(Long id, int from, int size);
+    List<UserDto> getUsers(List<Long> ids, int from, int size);
 
     /**
      * Deletes a user from the system identified by their ID.

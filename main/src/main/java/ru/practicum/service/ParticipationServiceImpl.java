@@ -19,7 +19,7 @@ import ru.practicum.mapper.ParticipationMapper;
 import ru.practicum.model.ParticipationRequest;
 import ru.practicum.repository.EventRepository;
 import ru.practicum.repository.ParticipationRepository;
-import ru.practicum.service.impl.ParticipationPrivateService;
+import ru.practicum.service.api.ParticipationPrivateService;
 
 import javax.persistence.EntityManager;
 import java.time.LocalDateTime;
@@ -39,11 +39,7 @@ import static ru.practicum.enums.ParticipationRequestStatus.REJECTED;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional(
-        readOnly = true,
-        isolation = Isolation.REPEATABLE_READ,
-        propagation = Propagation.REQUIRED
-)
+@Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
 public class ParticipationServiceImpl implements ParticipationPrivateService {
     private final ParticipationRepository participationRepository;
     private final ParticipationMapper participationMapper;
@@ -85,8 +81,8 @@ public class ParticipationServiceImpl implements ParticipationPrivateService {
         checkUserIsInitiator(userId, eventId, eventFullDto);
         validParticipation(newRequestsEvent, eventFullDto, eventRegistrations);
 
-        participationRepository.updateByIdIn(newRequestsEvent.getRequestIds(), newRequestsEvent.getStatus().toString());
-        eventRepository.updateByIdInAndConfirmedRequests(eventId, newRequestsEvent.getRequestIds().size());
+        participationRepository.updateStatusByParticipationIds(newRequestsEvent.getRequestIds(), newRequestsEvent.getStatus());
+        eventRepository.updateConfirmedRequestsById(eventId, newRequestsEvent.getRequestIds().size());
 
         entityManager.clear();
 
@@ -103,10 +99,7 @@ public class ParticipationServiceImpl implements ParticipationPrivateService {
         confirmedRequests.sort(Comparator.comparing(ParticipationRequestDto::getId).reversed());
         rejectedRequests.sort(Comparator.comparing(ParticipationRequestDto::getId).reversed());
 
-        EventRequestStatusUpdateResult result = EventRequestStatusUpdateResult.builder()
-                .confirmedRequests(confirmedRequests)
-                .rejectedRequests(rejectedRequests)
-                .build();
+        EventRequestStatusUpdateResult result = participationMapper.toUpdateResult(confirmedRequests, rejectedRequests);
 
         log.info("Request status updated. Confirmed: {}, Rejected: {}", confirmedRequests.size(), rejectedRequests.size());
         return result;
@@ -118,10 +111,10 @@ public class ParticipationServiceImpl implements ParticipationPrivateService {
         log.debug("Canceling request {} for user {}", requestId, userId);
 
         ParticipationRequestDto request = participationMapper.toDto(participationRepository.findById(requestId)
-                .orElseThrow(() -> new NotFoundException("Request not found")));
+                .orElseThrow(() -> new NotFoundException(String.format("Request with id %s not found", requestId))));
 
         request.setStatus(CANCELED);
-        participationRepository.updateByIdStatus(request.getId(), request.getStatus().toString());
+        participationRepository.updateByIdStatus(request.getId(), request.getStatus());
 
         log.info("Request {} canceled", requestId);
         return request;
@@ -153,22 +146,6 @@ public class ParticipationServiceImpl implements ParticipationPrivateService {
                 .orElseThrow(() -> new NotFoundException(String.format("Event with id %s not found", eventId))));
     }
 
-    private static void validParticipation(EventRequestStatusUpdateRequest newRequestsEvent, EventFullDto eventFullDto, List<ParticipationRequest> eventRegistrations) {
-        switch (newRequestsEvent.getStatus()) {
-            case CONFIRMED:
-                eventFullDto.setConfirmedRequests(eventFullDto.getConfirmedRequests() + newRequestsEvent.getRequestIds().size());
-            case CANCELED:
-                eventFullDto.setConfirmedRequests(eventFullDto.getConfirmedRequests() - newRequestsEvent.getRequestIds().size());
-        }
-        if (eventFullDto.getConfirmedRequests() >= eventFullDto.getParticipantLimit() && eventFullDto.getParticipantLimit() != 0) {
-            throw new ConflictException("Limit of requests for applications has been exceeded");
-        }
-        for (ParticipationRequest eventRegistration : eventRegistrations) {
-            if (eventRegistration.getStatus() == CONFIRMED) {
-                throw new ConflictException(String.format("Request with id %s has already been confirmed", eventRegistration.getId()));
-            }
-        }
-    }
 
     private void checkParticipationLimit(EventFullDto eventFullDto) {
         if (eventFullDto.getConfirmedRequests() >= eventFullDto.getParticipantLimit() && eventFullDto.getParticipantLimit() != 0) {
@@ -209,6 +186,23 @@ public class ParticipationServiceImpl implements ParticipationPrivateService {
     private void checkEventIsPublished(EventFullDto eventFullDto) {
         if (!Objects.equals(eventFullDto.getState().toString(), State.PUBLISHED.toString())) {
             throw new ConflictException(String.format("Event with id :%s is not published", eventFullDto.getId()));
+        }
+    }
+
+    private static void validParticipation(EventRequestStatusUpdateRequest newRequestsEvent, EventFullDto eventFullDto, List<ParticipationRequest> eventRegistrations) {
+        switch (newRequestsEvent.getStatus()) {
+            case CONFIRMED:
+                eventFullDto.setConfirmedRequests(eventFullDto.getConfirmedRequests() + newRequestsEvent.getRequestIds().size());
+            case CANCELED:
+                eventFullDto.setConfirmedRequests(eventFullDto.getConfirmedRequests() - newRequestsEvent.getRequestIds().size());
+        }
+        if (eventFullDto.getConfirmedRequests() >= eventFullDto.getParticipantLimit() && eventFullDto.getParticipantLimit() != 0) {
+            throw new ConflictException("Limit of requests for applications has been exceeded");
+        }
+        for (ParticipationRequest eventRegistration : eventRegistrations) {
+            if (eventRegistration.getStatus() == CONFIRMED) {
+                throw new ConflictException(String.format("Request with id %s has already been confirmed", eventRegistration.getId()));
+            }
         }
     }
 }
