@@ -4,9 +4,10 @@ drop table if exists compilations cascade;
 drop table if exists comments cascade;
 drop table if exists ratings cascade;
 drop table if exists events cascade;
-drop table if exists users cascade;
 drop table if exists category cascade;
 drop table if exists locations cascade;
+drop table if exists subscriptions cascade;
+drop table if exists users cascade;
 
 
 CREATE TABLE IF NOT EXISTS users
@@ -100,4 +101,13 @@ CREATE TABLE IF NOT EXISTS ratings
     assessment DOUBLE PRECISION NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
     FOREIGN KEY (event_id) REFERENCES events (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS subscriptions
+(
+    subscriber_id INT NOT NULL,
+    author_id     INT NOT NULL,
+    PRIMARY KEY (subscriber_id, author_id),
+    FOREIGN KEY (subscriber_id) REFERENCES users (id),
+    FOREIGN KEY (author_id) REFERENCES users (id)
 );

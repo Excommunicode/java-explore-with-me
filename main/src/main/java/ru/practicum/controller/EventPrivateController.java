@@ -71,5 +71,4 @@ public class EventPrivateController {
                                                               @RequestBody EventRequestStatusUpdateRequest newRequestsEvent) {
         return eventRegistrationService.changeStateRequests(userId, eventId, newRequestsEvent);
     }
-
 }

@@ -49,5 +49,4 @@ public class QRating extends EntityPathBase<Rating> {
         this.event = inits.isInitialized("event") ? new QEvent(forProperty("event"), inits.get("event")) : null;
         this.user = inits.isInitialized("user") ? new QUser(forProperty("user")) : null;
     }
-
 }

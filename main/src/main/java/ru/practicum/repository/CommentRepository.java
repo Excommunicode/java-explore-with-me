@@ -28,7 +28,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
      */
     @Query("SELECT c " +
             "FROM Comment c " +
-            "JOIN FETCH Event e " +
+            "JOIN FETCH c.event e " +
             "WHERE e.id = :eventId")
     List<Comment> findAllByEvent_Id(Long eventId, Pageable pageable);
 
