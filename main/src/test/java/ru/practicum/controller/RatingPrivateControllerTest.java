@@ -14,7 +14,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import ru.practicum.dto.rating.NewRatingDto;
 import ru.practicum.dto.rating.RatingDto;
-import ru.practicum.service.impl.RatingPrivateService;
+import ru.practicum.service.api.RatingPrivateService;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.any;

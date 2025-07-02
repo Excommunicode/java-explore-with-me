@@ -1,4 +1,4 @@
-package ru.practicum.service.impl;
+package ru.practicum.service.api;
 
 import ru.practicum.dto.compilation.CompilationDto;
 import ru.practicum.dto.compilation.UpdateCompilationRequest;

@@ -18,9 +18,9 @@ import ru.practicum.mapper.CommentMapper;
 import ru.practicum.repository.CommentRepository;
 import ru.practicum.repository.EventRepository;
 import ru.practicum.repository.UserRepository;
-import ru.practicum.service.impl.CommentAdminService;
-import ru.practicum.service.impl.CommentPrivateService;
-import ru.practicum.service.impl.CommentPublicService;
+import ru.practicum.service.api.CommentAdminService;
+import ru.practicum.service.api.CommentPrivateService;
+import ru.practicum.service.api.CommentPublicService;
 
 import javax.persistence.EntityManager;
 import java.time.LocalDateTime;
@@ -31,11 +31,7 @@ import java.util.Objects;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional(
-        readOnly = true,
-        isolation = Isolation.REPEATABLE_READ,
-        propagation = Propagation.REQUIRED
-)
+@Transactional(readOnly = true, isolation = Isolation.REPEATABLE_READ, propagation = Propagation.REQUIRED)
 public class CommentServiceImpl implements CommentPrivateService, CommentPublicService, CommentAdminService {
     private final CommentRepository commentRepository;
     private final CommentMapper commentMapper;
@@ -48,8 +44,8 @@ public class CommentServiceImpl implements CommentPrivateService, CommentPublicS
     @Override
     public CommentDto addCommentDto(Long userId, Long eventId, NewCommentDto newCommentDto) {
         log.debug("Adding comment for userId: {} and eventId: {}", userId, eventId);
-        findUserById(userId);
-        findEventById(eventId);
+        existsUserById(userId);
+        existsEventById(eventId);
         CommentDto commentDto = commentMapper.toDto(commentRepository.save(
                 commentMapper.toModel(userId, eventId, newCommentDto, LocalDateTime.now())));
         log.info("Comment added successfully for userId: {} and eventId: {}", userId, eventId);
@@ -60,7 +56,7 @@ public class CommentServiceImpl implements CommentPrivateService, CommentPublicS
     @Override
     public CommentDto updateCommentDto(Long userId, Long commentId, NewCommentDto newCommentDto) {
         log.debug("Updating comment for userId: {} and commentId: {}", userId, commentId);
-        findUserById(userId);
+        existsUserById(userId);
 
         CommentDto commentDto = findCommentById(commentId);
         checkIsAuthor(userId, commentDto.getAuthor());
@@ -123,7 +119,7 @@ public class CommentServiceImpl implements CommentPrivateService, CommentPublicS
         eventRepository.deleteById(commentId);
     }
 
-    private void findUserById(Long userId) {
+    private void existsUserById(Long userId) {
 
         if (!userRepository.existsById(userId)) {
             throw new NotFoundException(String.format("User with id %s not found", userId));
@@ -131,7 +127,7 @@ public class CommentServiceImpl implements CommentPrivateService, CommentPublicS
 
     }
 
-    private void findEventById(Long eventId) {
+    private void existsEventById(Long eventId) {
 
         if (!eventRepository.existsById(eventId)) {
             throw new NotFoundException(String.format("Event with id %s not found", eventId));
